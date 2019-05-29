@@ -1,0 +1,19 @@
+{
+  "name": "yamp",
+  "version": "1.0.0",
+  "description": "Yet Another Music Player - A minimal Electron application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Sarbik",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^5.0.0",
+    "electron-reload": "^1.4.0"
+  },
+  "dependencies": {
+    "electron-window-state": "^5.0.3",
+    "jsmediatags": "^3.8.1"
+  }
+}
