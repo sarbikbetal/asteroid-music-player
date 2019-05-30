@@ -3,17 +3,18 @@ const {
   app,
   BrowserWindow,
   Menu,
+  nativeImage,
   globalShortcut
 } = require('electron')
+const state = require('electron-window-state');
+const jsmediatags = require('jsmediatags');
+const { Song } = require('./assets/song');
 
+// Dev dependency
 require('electron-reload')(__dirname)
 
-const state = require('electron-window-state');
 
 let mainWindow
-
-
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -23,6 +24,9 @@ app.on('ready', () => {
     defaultHeight: 700,
     defaultWidth: 1200
   })
+
+  // Invoke the file listing function
+  var musicObjects = loadFiles()
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -36,7 +40,7 @@ app.on('ready', () => {
       nodeIntegration: true
     }
   })
-  
+
   // let mainMenu = Menu.buildFromTemplate(require('./menu'))
   // Menu.setApplicationMenu(mainMenu)
 
@@ -55,6 +59,12 @@ app.on('ready', () => {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+
+  
+  // Sends the song object array to renderer process
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('songs', musicObjects);
+  })
 })
 
 // Quit when all windows are closed.
@@ -72,3 +82,79 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+
+// Traverses the given directory and searches for mp3 files and returs a song object
+function loadFiles() {
+
+  var walkSync = function (dir, filelist) {
+    var path = path || require('path');
+    var fs = fs || require('fs'),
+      files = fs.readdirSync(dir);
+    filelist = filelist || [];
+    files.forEach(function (file) {
+      if (fs.statSync(path.join(dir, file)).isDirectory()) {
+        filelist = walkSync(path.join(dir, file), filelist);
+      }
+      else {
+        // In case of audio files...
+        if (file.indexOf('.mp3') == file.length - 4) {
+          filelist.push(path.join(dir, file));
+        }
+      }
+    });
+    return filelist;
+  };
+
+  var musicDirs = walkSync(__dirname + "/search");
+
+  var songs = [];
+
+  musicDirs.forEach((song) => {
+
+    jsmediatags.read(song, {
+      onSuccess: (tag) => {
+        var image = tag.tags.picture;
+        var smallImg;
+        if (image) {
+          var base64String = "";
+          for (var i = 0; i < image.data.length; i++) {
+            base64String += String.fromCharCode(image.data[i]);
+          }
+          smallImg = base64String
+        } else {
+          smallImg = null
+        }
+        // if (image) {
+
+          
+        //   base64 = "data:image/jpeg;base64," + window.btoa(base64String);
+        // } else {
+        //   base64 = "assets/headphones.svg";
+        // }
+
+        var sound = new Song({
+          filename: song,
+          title: tag.tags.title,
+          url: song,
+          artist: tag.tags.artist,
+          album: tag.tags.album,
+          img: smallImg
+        });
+        songs.push(sound);
+      },
+      onError: (error) => {
+        console.log(':(', error.type, error.info);
+        console.log(song);
+        var sound = new Song({
+          filename: song,
+          url: song
+        });
+        songs.push(sound);
+      }
+    });
+  });
+  console.log(songs)
+  return songs
+}
+
