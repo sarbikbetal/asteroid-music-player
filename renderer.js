@@ -2,35 +2,33 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 const { ipcRenderer } = require('electron');
-const { Song, nowPlaying } = require('./assets/song');
+const { Howl, Howler } = require('howler');
 const StickyEvents = require('sticky-events').default;
 
-var currentSong = new Song({})
+var nowHowling // This is a howl object
+var nowPlaying // This is my custom song object
+var fullList = [];
 
-
-var allSongs;
-
+// Receives all the songs from Main Process
 ipcRenderer.on('songs', (e, songs) => {
-    allSongs = songs;
+    var allSongs = songs;
     populate(allSongs);
-    console.log(allSongs);
 })
-
-// This is the array of the returned absolute paths of the music files
-// var musicFiles = walkSync(__dirname + "/search")
-// console.log(musicFiles)
-
 
 // Important DOM nodes
 var songView = document.getElementById('allSongs');
 var playPause = document.getElementById('playPause');
 var nextBtn = document.getElementById('nextBtn');
 var prevBtn = document.getElementById('prevBtn');
+var deckImg = document.getElementById('nowPlayingImg')
+var trackTitle = document.getElementById('trackTitle')
 
 // Experimental code
 const populate = (songs) => {
+    var i=0;
     songs.forEach(song => {
         var songObj = new Song(song)
+        songObj.listId = i++
         var base64
         if (song.img) {
             base64 = "data:image/jpeg;base64," + window.btoa(song.img);
@@ -55,22 +53,93 @@ const populate = (songs) => {
         </div>`)
         newNode.addEventListener("click", () => {
             songObj.play();
-            currentSong = songObj;
         })
         songView.appendChild(newNode);
-        // songView.appendChild(makeTemplate(''));
+        fullList.push(songObj);
     });
+    console.log(fullList);
 }
 
 // Handle click events on media playback buttons
 playPause.addEventListener('click', () => {
-    if (nowPlaying().isPlaying) {
-        currentSong.pause()
+    if (nowHowling.playing()) {
+        nowHowling.pause()
     } else {
-        currentSong.resume()
+        nowHowling.play()
     }
-    console.log(nowPlaying());
 })
+
+nextBtn.addEventListener('click',()=>{
+    if(nowPlaying.listId != fullList.length-1){
+        fullList[nowPlaying.listId+1].play()
+    }else{
+        //code for toast
+    }
+})
+
+prevBtn.addEventListener('click',()=>{
+    if(nowPlaying.listId != 0){
+        fullList[nowPlaying.listId-1].play()
+    }else{
+        //code for toast
+    }
+})
+
+// My custom song object
+class Song {
+    constructor(o) {
+        this.filename = o.filename;
+        this.title = (typeof o.title === 'string') ? o.title : o.filename;
+        this.url = o.url;
+        this.artist = (typeof o.artist === 'string') ? o.artist : "Unknown Artist";
+        this.album = (typeof o.album === 'string') ? o.album : "Unknown Album";
+        this.year = (typeof o.year === 'number') ? o.year : "--";
+        this.img = o.img;
+        this.listId = null;
+    }
+    play() {
+        var self = this;
+        Howler.unload();
+        nowPlaying = self;
+        nowHowling = new Howl({
+            src: self.url,
+            html5: true,
+            onload: function () {
+                var albumArt
+                if (self.img) {
+                    albumArt = "data:image/jpeg;base64," + window.btoa(self.img);
+                } else {
+                    albumArt = "./assets/headphones.svg"
+                }
+                trackTitle.innerHTML = self.title
+                deckImg.setAttribute('src', albumArt)
+                nowHowling.play();
+            },
+            onplay: function () {
+                playPause.firstChild.setAttribute('src', './assets/buttons/pause.svg')
+            },
+            onpause: function () {
+                playPause.firstChild.setAttribute('src', './assets/buttons/play_arrow.svg')
+            },
+            onplayerror: function () {
+                console.log('Error occured during playback');
+            },
+            onend: function () {
+                nowHowling.off();
+                nowHowling.unload();
+            }
+        })
+    }
+};
+
+// Playlist creation functions
+function newPlaylist(songs) {
+    var id = 0;
+    songs.forEach((song)=>{
+        song.listId = id;
+        id++;
+    })
+}
 
 // string to html node creating function
 function makeTemplate(html) {
@@ -80,27 +149,22 @@ function makeTemplate(html) {
     return template.content.firstChild;
 }
 
-
-
-
 // Create new StickyEvents instance
-
 const stickyEvents = new StickyEvents({
-  container: document.querySelector('.Middle'),
-  stickySelector: '.list-heading'
+    container: document.querySelector('.Middle'),
+    stickySelector: '.list-heading'
 });
 
-// Add event listeners
-
+// Add sticky event listeners
 const { stickyElements } = stickyEvents;
 
 stickyElements.forEach(sticky => {
-  sticky.addEventListener(StickyEvents.STUCK, (event) => {
-    sticky.classList.add('z-depth-2');
-    sticky.classList.remove('z-depth-0');
-  });
-  sticky.addEventListener(StickyEvents.UNSTUCK, (event) => {
-    sticky.classList.add('z-depth-0');
-    sticky.classList.remove('z-depth-2');
-  });
+    sticky.addEventListener(StickyEvents.STUCK, (event) => {
+        sticky.classList.add('z-depth-2');
+        sticky.classList.remove('z-depth-0');
+    });
+    sticky.addEventListener(StickyEvents.UNSTUCK, (event) => {
+        sticky.classList.add('z-depth-0');
+        sticky.classList.remove('z-depth-2');
+    });
 });
