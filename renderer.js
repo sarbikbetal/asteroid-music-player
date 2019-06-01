@@ -1,9 +1,12 @@
 // This file is required by the index.html file and will
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
-const { ipcRenderer, nativeImage } = require('electron');
-const { Howl, Howler } = require('howler');
-const jsmediatags = require('jsmediatags');
+const { ipcRenderer } = require('electron');
+const { Song, nowPlaying } = require('./assets/song');
+const StickyEvents = require('sticky-events').default;
+
+var currentSong = new Song({})
+
 
 var allSongs;
 
@@ -11,7 +14,6 @@ ipcRenderer.on('songs', (e, songs) => {
     allSongs = songs;
     populate(allSongs);
     console.log(allSongs);
-
 })
 
 // This is the array of the returned absolute paths of the music files
@@ -21,70 +23,54 @@ ipcRenderer.on('songs', (e, songs) => {
 
 // Important DOM nodes
 var songView = document.getElementById('allSongs');
+var playPause = document.getElementById('playPause');
+var nextBtn = document.getElementById('nextBtn');
+var prevBtn = document.getElementById('prevBtn');
 
-
-// Experimenytal code
+// Experimental code
 const populate = (songs) => {
     songs.forEach(song => {
+        var songObj = new Song(song)
         var base64
         if (song.img) {
             base64 = "data:image/jpeg;base64," + window.btoa(song.img);
         } else {
             base64 = "./assets/headphones.svg"
         }
-        var newNode = makeTemplate(`<div class="col s6 m3 l2">
-        <div class="card">
-          <div class="card-image"><img id="pic" src="${base64}" height="auto" width="100%"><a
-              class="btn-floating halfway-fab waves-effect waves-light red"></a></div>
-          <div class="card-content">
-            <h6 class='truncate'>${song.title}</h6>
-          </div>
+        var newNode = makeTemplate(`
+        <div class="card horizontal waves-effect">
+        <div class="card-image">
+            <img src="${base64}">
         </div>
-      </div>`)
-        songView.appendChild(newNode);
+        <div class="card-stacked">
+            <div class="card-content">
+            <div class="row">
+            <div class="col s4"><p class="truncate">${song.title}</p></div>
+            <div class="col s3"><p class="truncate">${song.artist}</p></div>
+            <div class="col s3"><p class="truncate">${song.album}</p></div>
+            <div class="col s2"></div>
+            </div>
+            </div>
+            </div>
+        </div>`)
         newNode.addEventListener("click", () => {
-            playSong(song.url);
+            songObj.play();
+            currentSong = songObj;
         })
+        songView.appendChild(newNode);
+        // songView.appendChild(makeTemplate(''));
     });
 }
 
-// We then iterate through each song and collect it's metadata
-// musicFiles.forEach((song) => {
-//     jsmediatags.read(song, {
-//         onSuccess: (tag) => {
-//             var image = tag.tags.picture;
-//             var title = tag.tags.title;
-//             var base64;
-//             if (image) {
-//                 // var pic = document.getElementById('picture')
-//                 var base64String = "";
-//                 for (var i = 0; i < image.data.length; i++) {
-//                     base64String += String.fromCharCode(image.data[i]);
-//                 }
-//                 base64 = "data:image/jpeg;base64," + window.btoa(base64String);
-//             } else {
-//                 base64 = "assets/headphones.svg";
-//             }
-//             var newNode = makeTemplate(`<div class="col s6 m3 l2">
-//             <div class="card">
-//               <div class="card-image"><img id="pic" src="${base64}" height="auto" width="100%"><a
-//                   class="btn-floating halfway-fab waves-effect waves-light red"></a></div>
-//               <div class="card-content">
-//                 <h6>${title}</h6>
-//               </div>
-//             </div>
-//           </div>`)
-//             allSongs.appendChild(newNode);
-//             newNode.addEventListener("click", () => {
-//                 playSong(song);
-//             })
-//         },
-//         onError: (error) => {
-//             console.log(':(', error.type, error.info);
-//             console.log(song);
-//         }
-//     })
-// });
+// Handle click events on media playback buttons
+playPause.addEventListener('click', () => {
+    if (nowPlaying().isPlaying) {
+        currentSong.pause()
+    } else {
+        currentSong.resume()
+    }
+    console.log(nowPlaying());
+})
 
 // string to html node creating function
 function makeTemplate(html) {
@@ -95,21 +81,26 @@ function makeTemplate(html) {
 }
 
 
-// Howler js sound configs
-var sound = new Howl({
-    src: 'assets/placehold.mp3'
-});
-var nowPlaying = null;
 
-// Music playback methods
-function playSong(src) {
-    sound.unload();
-    sound = new Howl({
-        src: src,
-        html5: true
-    })
-    sound.on("load", () => {
-        nowPlaying = sound.play();
-        console.log(src + " playing");
-    })
-}
+
+// Create new StickyEvents instance
+
+const stickyEvents = new StickyEvents({
+  container: document.querySelector('.Middle'),
+  stickySelector: '.list-heading'
+});
+
+// Add event listeners
+
+const { stickyElements } = stickyEvents;
+
+stickyElements.forEach(sticky => {
+  sticky.addEventListener(StickyEvents.STUCK, (event) => {
+    sticky.classList.add('z-depth-2');
+    sticky.classList.remove('z-depth-0');
+  });
+  sticky.addEventListener(StickyEvents.UNSTUCK, (event) => {
+    sticky.classList.add('z-depth-0');
+    sticky.classList.remove('z-depth-2');
+  });
+});

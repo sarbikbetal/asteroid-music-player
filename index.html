@@ -9,26 +9,65 @@
 </head>
 
 <body>
-  <div class="row">
-    <div class="col s12">
-      <div class="row" id="allSongs">
-        <div class="col s6 m3 l2">
-          <div class="card">
-            <div class="card-image">
-              <img id="pic" src="assets/headphones.svg" height="auto" width="100%">
-              <span class="card-title">Card Title</span>
-              <a class="btn-floating halfway-fab waves-effect waves-light red"><i class="material-icons">add</i></a>
-            </div>
-            <div class="card-content">
 
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
+  <div class="Top">
 
   </div>
 
+  <div class="Container">
+    <div class="Left">
+      <div class="row">
+        <h5 class="truncate" id="trackTitle">Track Name</h5>
+        <div class="card z-depth-3">
+          <div class="card-image" style="height:226px; line-height: 220px">
+            <img id="nowPlayingImg" src="./assets/headphones.svg">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s4">
+          <a class="button waves-effect media-control" id="prevBtn">
+            <img src="./assets/buttons/skip_previous.svg">
+          </a>
+        </div>
+        <div class="col s4">
+          <a class="btn-floating btn-large waves-effect white z-depth-3" id="playPause"><img
+              src="./assets/buttons/play_arrow.svg" height="56"></a>
+        </div>
+        <div class="col s4">
+          <a class="button waves-effect media-control" id="nextBtn">
+            <img src="./assets/buttons/skip_next.svg">
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="Middle">
+      <div class="row list-heading">
+        <div class="card-panel z-depth-0" style="padding: 8px 8px 8px 64px; margin:0;">
+          <div class="row">
+            <div class="col s4">
+              <b>Title</b>
+            </div>
+            <div class="col s3"></div>
+            <div class="col s3"></div>
+            <div class="col s2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <div class="row" id="allSongs">
+
+          </div>
+        </div>
+
+
+
+      </div>
+    </div>
+    <div class="Right">Right Content</div>
+  </div>
   <script>
     // You can also require other files to run in this process
     require('./renderer.js')
@@ -37,5 +76,3 @@
 </body>
 
 </html>
-
-

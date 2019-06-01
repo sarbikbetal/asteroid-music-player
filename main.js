@@ -2,13 +2,9 @@
 const {
   app,
   BrowserWindow,
-  Menu,
-  nativeImage,
-  globalShortcut
 } = require('electron')
 const state = require('electron-window-state');
 const jsmediatags = require('jsmediatags');
-const { Song } = require('./assets/song');
 
 // Dev dependency
 require('electron-reload')(__dirname)
@@ -60,7 +56,7 @@ app.on('ready', () => {
     mainWindow = null
   })
 
-  
+
   // Sends the song object array to renderer process
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('songs', musicObjects);
@@ -127,13 +123,13 @@ function loadFiles() {
         }
         // if (image) {
 
-          
+
         //   base64 = "data:image/jpeg;base64," + window.btoa(base64String);
         // } else {
         //   base64 = "assets/headphones.svg";
         // }
 
-        var sound = new Song({
+        var sound = new Object({
           filename: song,
           title: tag.tags.title,
           url: song,
@@ -144,9 +140,8 @@ function loadFiles() {
         songs.push(sound);
       },
       onError: (error) => {
-        console.log(':(', error.type, error.info);
-        console.log(song);
-        var sound = new Song({
+        console.error(':(', error.type, error.info, song);
+        var sound = new Object({
           filename: song,
           url: song
         });
