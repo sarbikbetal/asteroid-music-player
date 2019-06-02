@@ -55,8 +55,6 @@ app.on('ready', () => {
     // when you should delete the corresponding element.
     mainWindow = null
   })
-
-
   // Sends the song object array to renderer process
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('songs', musicObjects);
@@ -82,9 +80,10 @@ app.on('activate', function () {
 
 // Traverses the given directory and searches for mp3 files and returs a song object
 function loadFiles() {
+  
+  var path = path || require('path');
 
   var walkSync = function (dir, filelist) {
-    var path = path || require('path');
     var fs = fs || require('fs'),
       files = fs.readdirSync(dir);
     filelist = filelist || [];
@@ -130,7 +129,7 @@ function loadFiles() {
         // }
 
         var sound = new Object({
-          filename: song,
+          filename: path.basename(song),
           title: tag.tags.title,
           url: song,
           artist: tag.tags.artist,
@@ -142,7 +141,7 @@ function loadFiles() {
       onError: (error) => {
         console.error(':(', error.type, error.info, song);
         var sound = new Object({
-          filename: song,
+          filename: path.basename(song),
           url: song
         });
         songs.push(sound);
