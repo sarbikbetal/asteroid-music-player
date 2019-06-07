@@ -77,6 +77,11 @@ if (!localStorage.volume) {
 vol.addEventListener('change', () => {
     if (vol.value != 0) {
         localStorage.setItem("volume", vol.value);
+        if (mute.getAttribute('src') != './assets/buttons/volume_up.svg') {
+            mute.setAttribute('src', './assets/buttons/volume_up.svg');
+        }
+    } else {
+        mute.setAttribute('src', './assets/buttons/volume_off.svg');
     }
     if (nowHowling != null) {
         nowHowling.volume(vol.value / 100)
@@ -88,13 +93,13 @@ vol.addEventListener('change', () => {
 mute.addEventListener('click', () => {
     if (vol.value != 0) {
         vol.value = 0;
-        mute.setAttribute('src','./assets/buttons/volume_off.svg');
-        if (nowHowling != null) {nowHowling.mute(true)}
+        mute.setAttribute('src', './assets/buttons/volume_off.svg');
+        if (nowHowling != null) { nowHowling.volume(0) }
     }
     else {
         vol.value = localStorage.volume;
-        mute.setAttribute('src','./assets/buttons/volume_up.svg');
-        if (nowHowling != null) {nowHowling.mute(false)}
+        mute.setAttribute('src', './assets/buttons/volume_up.svg');
+        if (nowHowling != null) { nowHowling.volume(vol.value / 100) }
     }
     mute = document.getElementsByClassName('vol')[0].firstElementChild;
 })
@@ -145,7 +150,7 @@ class Song {
         nowHowling = new Howl({
             src: self.url,
             html5: true,
-            volume: vol.value/100,
+            volume: vol.value / 100,
             onload: function () {
                 var albumArt
                 if (self.img) {
