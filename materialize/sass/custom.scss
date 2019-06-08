@@ -1,0 +1,130 @@
+//////////////Section definition
+:root {
+    --seekbar: inset 0px 0px 0px 0px #18c76f;
+  }
+body {
+    overflow-x: hidden;
+    background: rgb(255, 255, 255);
+    background: repeating-linear-gradient(300deg, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 0.08) 23%, rgba(255, 255, 255, 1) 49%)
+}
+
+.Top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    position: relative;
+    height: 56px;
+}
+
+.Container {
+    display: flex;
+    overflow: hidden;
+    height: 100vh;
+    margin-top: -64px;
+    padding-top: 64px;
+    position: relative;
+    width: 100%;
+    backface-visibility: hidden;
+    will-change: overflow;
+}
+
+.Left,
+.Middle,
+.Right {
+    overflow: auto;
+    height: calc(100vh - 64px);
+    padding: .5rem;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/*  Left and Right are set sizes while the Middle is set to flex one so it occupies all remaining space. This could be set as a width too if prefereable, perhaps using calc.*/
+.Left {
+    width: 240px;
+}
+
+.Middle {
+    flex: 1;
+    background-color: #fff;
+    border-radius: 6px;
+    padding-top: 2px;
+}
+
+.Right {
+    position: absolute;
+    right: -10rem;
+    width: 12.5rem;
+    background-color: violet;
+}
+
+a {
+    &.media-control {
+
+        border-radius: 24px;
+        height: 48px;
+        width: 48px;
+        margin: 4px;
+
+        img {
+            height: 42px;
+            width: 42px;
+            margin: 3px;
+        }
+
+        transition: all 0.4s;
+
+        &:hover {
+            background-color: #0000001a;
+        }
+    }
+}
+
+.list-heading {
+    color: #00000081;
+    position: sticky;
+    top: -1px;
+    margin: 0;
+    z-index: 4;
+}
+
+#nowPlayingImg {
+    display: inline;
+    vertical-align: middle;
+}
+
+.deckTitle {
+    padding: 0 8px;
+}
+
+h5.deckTitle {
+    color: #000000da;
+    margin: 0 0 6px 0;
+}
+
+h6.deckTitle {
+    color: #0000009c;
+    margin: 0 0 10px 0;
+}
+
+.col.vol {
+    width: 27px !important;
+    height: 24px;
+    margin: 20px 0 0 0;
+    padding: 0 0 0 3px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.seek-bar {
+    input[type=range]::-webkit-slider-runnable-track {
+        box-shadow: var(--seekbar);
+    }
+    input[type=range]+.thumb {
+        visibility: hidden;
+    }
+}

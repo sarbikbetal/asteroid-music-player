@@ -8,7 +8,8 @@ const StickyEvents = require('sticky-events').default;
 
 var nowHowling = null // This is a howl object
 var nowPlaying // This is my custom song object
-var fullList = [];
+var fullList = []
+var timer
 
 // Receives all the songs from Main Process
 ipcRenderer.on('songs', (e, songs) => {
@@ -25,7 +26,10 @@ var deckImg = document.getElementById('nowPlayingImg')
 var trackTitle = document.getElementById('trackTitle')
 var trackArtist = document.getElementById('trackArtist')
 var vol = document.getElementById('volSlider')
-var mute = document.getElementsByClassName('vol')[0].firstElementChild;
+var mute = document.getElementsByClassName('vol')[0].firstElementChild
+var seekBar = document.getElementById('seekBar')
+
+
 
 // Experimental code
 const populate = (songs) => {
@@ -66,7 +70,6 @@ const populate = (songs) => {
 
 // Volume control range slider
 
-// var volUp = document.getElementsByClassName('vol')[1].firstElementChild;
 
 if (!localStorage.volume) {
     vol.value = 100;
@@ -87,9 +90,7 @@ vol.addEventListener('change', () => {
         nowHowling.volume(vol.value / 100)
     }
 })
-// volUp.addEventListener('click',()=>{
-//     console.log("Volumeup");
-// })
+
 mute.addEventListener('click', () => {
     if (vol.value != 0) {
         vol.value = 0;
@@ -108,10 +109,14 @@ mute.addEventListener('click', () => {
 
 // Handle click events on media playback buttons
 playPause.addEventListener('click', () => {
-    if (nowHowling.playing()) {
-        nowHowling.pause()
+    if (nowHowling) {
+        if (nowHowling.playing()) {
+            nowHowling.pause()
+        } else {
+            nowHowling.play()
+        }
     } else {
-        nowHowling.play()
+        // M.toast({ html: '<span>Starting shuffle play</span>', classes: 'rounded center-align' });
     }
 })
 
@@ -119,7 +124,7 @@ nextBtn.addEventListener('click', () => {
     if (nowPlaying.listId != fullList.length - 1) {
         fullList[nowPlaying.listId + 1].play()
     } else {
-        //code for toast
+        M.toast({ html: '<span>End of playlist :(</span>', classes: 'rounded center-align' });
     }
 })
 
@@ -127,9 +132,28 @@ prevBtn.addEventListener('click', () => {
     if (nowPlaying.listId != 0) {
         fullList[nowPlaying.listId - 1].play()
     } else {
-        //code for toast
+        M.toast({ html: '<span>Nothing to play</span>', classes: 'rounded center-align' });
     }
 })
+
+// Seekbar(Progressbar)
+seekBar.addEventListener('change', () => {
+    var position = (seekBar.value / 100) * nowHowling.duration();
+    nowHowling.seek(position);
+    timer = setInterval(playProgress, 400)
+})
+seekBar.addEventListener('mousedown', (e) => {
+    clearInterval(timer);
+})
+
+function playProgress() {
+    if (nowHowling) {
+        var played = (nowHowling.seek() / nowHowling.duration());
+        var pixels = Math.round(played * 226);
+        seekBar.value = Math.round(played * 100);
+        document.documentElement.style.setProperty('--seekbar', `inset ${pixels}px 0px 0px 0px #18c76f`);
+    }
+}
 
 // My custom song object
 class Song {
@@ -168,16 +192,25 @@ class Song {
             },
             onplay: function () {
                 playPause.firstChild.setAttribute('src', './assets/buttons/pause.svg')
+                timer = setInterval(playProgress, 400)
             },
             onpause: function () {
                 playPause.firstChild.setAttribute('src', './assets/buttons/play_arrow.svg')
+                clearInterval(timer)
             },
             onplayerror: function () {
-                console.log('Error occured during playback');
+                console.error('Error occured during playback');
             },
             onend: function () {
-                nowHowling.off();
-                nowHowling.unload();
+                clearInterval(timer)
+                nowHowling.off()
+                nowHowling.unload()
+                nowHowling = null
+                if (nowPlaying.listId != fullList.length - 1) {
+                    fullList[nowPlaying.listId + 1].play()
+                } else {
+                    M.toast({ html: '<span>End of playlist :(</span>', classes: 'rounded center-align' });
+                }
             }
         })
     }
@@ -219,3 +252,4 @@ stickyElements.forEach(sticky => {
         sticky.classList.remove('z-depth-2');
     });
 });
+
