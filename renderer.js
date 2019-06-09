@@ -6,8 +6,14 @@ const { Howl, Howler } = require('howler');
 const StickyEvents = require('sticky-events').default;
 
 
+process.getProcessMemoryInfo().then(res => {
+    console.log(process.type, res);
+    console.log("This is the main renderer process");
+})
+
+
 var nowHowling = null // This is a howl object
-var nowPlaying // This is my custom song object
+var nowPlaying = null// This is my custom song object
 var fullList = []
 var timer
 
@@ -28,7 +34,7 @@ var trackArtist = document.getElementById('trackArtist')
 var vol = document.getElementById('volSlider')
 var mute = document.getElementsByClassName('vol')[0].firstElementChild
 var seekBar = document.getElementById('seekBar')
-
+var clientBtn = document.getElementById('clientBtn')
 
 
 // Experimental code
@@ -144,6 +150,7 @@ seekBar.addEventListener('change', () => {
 })
 seekBar.addEventListener('mousedown', (e) => {
     clearInterval(timer);
+    clearInterval(syncer);
 })
 
 function playProgress() {
@@ -191,6 +198,9 @@ class Song {
                 nowHowling.play();
             },
             onplay: function () {
+                process.getProcessMemoryInfo().then(res => {
+                    console.log(process.type, res);
+                })
                 playPause.firstChild.setAttribute('src', './assets/buttons/pause.svg')
                 timer = setInterval(playProgress, 400)
             },
@@ -253,3 +263,46 @@ stickyElements.forEach(sticky => {
     });
 });
 
+
+
+
+
+//// Server functions //////////
+
+function broadcast() {
+    var http = require('http')
+    var fs = require('fs')
+
+    var server = http.createServer(function (request, response) {
+        if (nowPlaying != null) {
+            var stat = fs.statSync(nowPlaying.url);
+            response.writeHead(200, {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET',
+                'Content-Type': 'audio/mpeg',
+                'Content-Length': stat.size
+            });
+            fs.createReadStream(nowPlaying.url).pipe(response);
+        }
+    }).listen(2000);
+
+    var syncer
+
+    const io = require('socket.io')(server);
+    io.on('connection', client => {
+        client.emit('connect', data => { text: 'Hello All' });
+        console.log('connected');
+        syncer = setInterval(() => {
+            if (nowHowling.state() == "loaded") {
+                var now = nowHowling.seek();
+                client.emit('time', now);
+                console.log(`synced to ${now}`);
+            }
+        }, 4000);
+    });
+}
+
+///////    Client button event listener /////
+clientBtn.addEventListener('click',()=>{
+    ipcRenderer.send('loadClient');
+})

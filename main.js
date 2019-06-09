@@ -1,8 +1,5 @@
 // Modules to control application life and create native browser window
-const {
-  app,
-  BrowserWindow,
-} = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const state = require('electron-window-state');
 const jsmediatags = require('jsmediatags');
 
@@ -55,9 +52,16 @@ app.on('ready', () => {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+
   // Sends the song object array to renderer process
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('songs', musicObjects);
+  })
+
+  // Respond tio IPCmsg to load client page
+  ipcMain.on('loadClient',()=>{
+    console.log("Loading client page");
+    mainWindow.loadFile('./client/client.html')
   })
 })
 
@@ -80,7 +84,7 @@ app.on('activate', function () {
 
 // Traverses the given directory and searches for mp3 files and returs a song object
 function loadFiles() {
-  
+
   var path = path || require('path');
 
   var walkSync = function (dir, filelist) {

@@ -16,6 +16,7 @@
     "electron-window-state": "^5.0.3",
     "howler": "^2.1.2",
     "jsmediatags": "^3.8.1",
+    "socket.io": "^2.2.0",
     "sticky-events": "^2.4.0"
   }
 }
