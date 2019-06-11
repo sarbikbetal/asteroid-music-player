@@ -1,25 +1,44 @@
 const { Howl, Howler } = require('howler');
+const io = require('socket.io-client')
 
 console.log("This is the client renderer process");
+console.log(process.pid);
 
 
-// var socket = io('http://localhost:2000');
+var sound;
+var socket = io('http://localhost:2415');
 
-// var sound;
-
-// socket.on('connect', function (data) {
-//     sound = new WaudSound('http://localhost:2000', {
-//         autoplay: false,
-//         onerror: function (a, b, c) {
-//             console.log(a, b, c);
-
-//         }
-//     });
-//     sound.play()
-//     console.log('connected to localhost', sound);
-// });
+socket.on('connect', () => {
+    // sound.seek(data);
+    // sound.play()
+    // console.log(`Playback continued from ${data}`);
+    loadSong()
+    console.log(`connected to socket io server`);
+});
 
 // socket.on('time', function (data) {
+//     console.log(data);
 //     console.log('syncing to ' + data);
-//     sound.seek(data);
+
 // });
+
+function loadSong() {
+    sound = new Howl({
+        src: 'http://localhost:2000',
+        format: 'mp3',
+        html5: true,
+        onloaderror: function (id, err) {
+            console.log(err);
+        },
+        onload: function () {
+            console.log('Song loaded from localhost');
+            socket.emit('loaded', (data) => {
+                console.log(data);
+                sound.play();
+                sound.seek(data);
+            });
+        }
+    });
+}
+
+var acd = new Howl()

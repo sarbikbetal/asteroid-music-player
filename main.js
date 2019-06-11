@@ -4,7 +4,12 @@ const state = require('electron-window-state');
 const jsmediatags = require('jsmediatags');
 
 // Dev dependency
+const { openProcessManager } = require('electron-process-manager');
 require('electron-reload')(__dirname)
+
+
+// Invoke the file listing function
+var musicObjects = loadFiles()
 
 
 let mainWindow
@@ -12,14 +17,12 @@ let mainWindow
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+  // openProcessManager();
 
   let winState = state({
     defaultHeight: 700,
     defaultWidth: 1200
   })
-
-  // Invoke the file listing function
-  var musicObjects = loadFiles()
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -56,10 +59,11 @@ app.on('ready', () => {
   // Sends the song object array to renderer process
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('songs', musicObjects);
+    console.log("objects sent");
   })
 
   // Respond tio IPCmsg to load client page
-  ipcMain.on('loadClient',()=>{
+  ipcMain.on('loadClient', () => {
     console.log("Loading client page");
     mainWindow.loadFile('./client/client.html')
   })

@@ -5,13 +5,6 @@ const { ipcRenderer } = require('electron');
 const { Howl, Howler } = require('howler');
 const StickyEvents = require('sticky-events').default;
 
-
-process.getProcessMemoryInfo().then(res => {
-    console.log(process.type, res);
-    console.log("This is the main renderer process");
-})
-
-
 var nowHowling = null // This is a howl object
 var nowPlaying = null// This is my custom song object
 var fullList = []
@@ -35,7 +28,7 @@ var vol = document.getElementById('volSlider')
 var mute = document.getElementsByClassName('vol')[0].firstElementChild
 var seekBar = document.getElementById('seekBar')
 var clientBtn = document.getElementById('clientBtn')
-
+var castBtn = document.getElementById('castBtn')
 
 // Experimental code
 const populate = (songs) => {
@@ -150,7 +143,6 @@ seekBar.addEventListener('change', () => {
 })
 seekBar.addEventListener('mousedown', (e) => {
     clearInterval(timer);
-    clearInterval(syncer);
 })
 
 function playProgress() {
@@ -198,9 +190,6 @@ class Song {
                 nowHowling.play();
             },
             onplay: function () {
-                process.getProcessMemoryInfo().then(res => {
-                    console.log(process.type, res);
-                })
                 playPause.firstChild.setAttribute('src', './assets/buttons/pause.svg')
                 timer = setInterval(playProgress, 400)
             },
@@ -210,6 +199,9 @@ class Song {
             },
             onplayerror: function () {
                 console.error('Error occured during playback');
+            },
+            onloaderror: function () {
+                console.error('Error occured during loading');
             },
             onend: function () {
                 clearInterval(timer)
@@ -267,42 +259,44 @@ stickyElements.forEach(sticky => {
 
 
 
-//// Server functions //////////
+// //// Server functions //////////
 
-function broadcast() {
-    var http = require('http')
-    var fs = require('fs')
+// function broadcast() {
+//     var http = require('http')
+//     var fs = require('fs')
 
-    var server = http.createServer(function (request, response) {
-        if (nowPlaying != null) {
-            var stat = fs.statSync(nowPlaying.url);
-            response.writeHead(200, {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET',
-                'Content-Type': 'audio/mpeg',
-                'Content-Length': stat.size
-            });
-            fs.createReadStream(nowPlaying.url).pipe(response);
-        }
-    }).listen(2000);
+//     var server = http.createServer(function (request, response) {
+//         if (nowPlaying != null) {
+//             var stat = fs.statSync(nowPlaying.url);
+//             response.writeHead(200, {
+//                 'Access-Control-Allow-Origin': '*',
+//                 'Access-Control-Allow-Methods': 'GET',
+//                 'Content-Type': 'audio/mpeg',
+//                 'Content-Length': stat.size
+//             });
+//             fs.createReadStream(nowPlaying.url).pipe(response);
+//         }
+//     }).listen(2000);
 
-    var syncer
 
-    const io = require('socket.io')(server);
-    io.on('connection', client => {
-        client.emit('connect', data => { text: 'Hello All' });
-        console.log('connected');
-        syncer = setInterval(() => {
-            if (nowHowling.state() == "loaded") {
-                var now = nowHowling.seek();
-                client.emit('time', now);
-                console.log(`synced to ${now}`);
-            }
-        }, 4000);
-    });
-}
+//     var socketServer = http.createServer().listen(2415)
+//     const io = require('socket.io')(socketServer);
+//     io.on('connect', client => {
+//         console.log('client connected');
 
-///////    Client button event listener /////
-clientBtn.addEventListener('click',()=>{
-    ipcRenderer.send('loadClient');
-})
+//         client.on('loaded', (time) => {
+//             var now = nowHowling.seek();
+//             time(now);
+//             console.log(`Song loaded by client and synced to ${now}`);
+//         })
+//     });
+// }
+
+// ///////   Cast & Client button event listener /////
+// clientBtn.addEventListener('click', () => {
+//     ipcRenderer.send('loadClient');
+// })
+// castBtn.addEventListener('click', () => {
+//     broadcast()
+//     console.log('Starting broadcast');
+// })
