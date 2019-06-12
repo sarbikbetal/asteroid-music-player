@@ -1,16 +1,14 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, ipcMain } = require('electron')
 const state = require('electron-window-state');
-const jsmediatags = require('jsmediatags');
 
 // Dev dependency
-const { openProcessManager } = require('electron-process-manager');
+// const { openProcessManager } = require('electron-process-manager');
 require('electron-reload')(__dirname)
 
 
 // Invoke the file listing function
 var musicObjects = loadFiles()
-
 
 let mainWindow
 // This method will be called when Electron has finished
@@ -109,54 +107,50 @@ function loadFiles() {
     return filelist;
   };
 
-  var musicDirs = walkSync(__dirname + "/search");
+  var musicDirs = walkSync("/mnt/media/Songs");
+//  var musicDirs = walkSync(__dirname + "/search");
 
-  var songs = [];
+  // var songs = [];
 
-  musicDirs.forEach((song) => {
+  // musicDirs.forEach((song) => {
 
-    jsmediatags.read(song, {
-      onSuccess: (tag) => {
-        var image = tag.tags.picture;
-        var smallImg;
-        if (image) {
-          var base64String = "";
-          for (var i = 0; i < image.data.length; i++) {
-            base64String += String.fromCharCode(image.data[i]);
-          }
-          smallImg = base64String
-        } else {
-          smallImg = null
-        }
-        // if (image) {
+  //   jsmediatags.read(song, {
+  //     onSuccess: (tag) => {
+  //       var image = tag.tags.picture;
+  //       var smallImg;
+  //       if (image) {
+  //         var base64String = "";
+  //         for (var i = 0; i < image.data.length; i++) {
+  //           base64String += String.fromCharCode(image.data[i]);
+  //         }
+  //         smallImg = base64String
+  //       } else {
+  //         smallImg = null
+  //       }
+  //       var sound = new Object({
+  //         filename: path.basename(song),
+  //         title: tag.tags.title,
+  //         url: song,
+  //         artist: tag.tags.artist,
+  //         album: tag.tags.album,
+  //         img: smallImg
+  //       });
+  //       songs.push(sound);
+  //     },
+  //     onError: (error) => {
+  //       console.error(':(', error.type, error.info, song);
+  //       var sound = new Object({
+  //         filename: path.basename(song),
+  //         url: song
+  //       });
+  //       songs.push(sound);
+  //     }
+  //   });
+  // });
 
+  // console.log(songs)
+  // return songs
 
-        //   base64 = "data:image/jpeg;base64," + window.btoa(base64String);
-        // } else {
-        //   base64 = "assets/headphones.svg";
-        // }
-
-        var sound = new Object({
-          filename: path.basename(song),
-          title: tag.tags.title,
-          url: song,
-          artist: tag.tags.artist,
-          album: tag.tags.album,
-          img: smallImg
-        });
-        songs.push(sound);
-      },
-      onError: (error) => {
-        console.error(':(', error.type, error.info, song);
-        var sound = new Object({
-          filename: path.basename(song),
-          url: song
-        });
-        songs.push(sound);
-      }
-    });
-  });
-  console.log(songs)
-  return songs
+  return musicDirs
 }
 

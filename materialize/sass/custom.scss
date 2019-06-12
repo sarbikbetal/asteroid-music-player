@@ -1,13 +1,17 @@
-//////////////Section definition
 :root {
     --seekbar: inset 0px 0px 0px 0px #18c76f;
-  }
+    --mid-width: calc(100vw - 250px);
+    --right-pos: -180px;
+    --drawer: 0deg;
+}
+
 body {
     overflow-x: hidden;
     background: rgb(255, 255, 255);
     background: repeating-linear-gradient(300deg, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 0.08) 23%, rgba(255, 255, 255, 1) 49%)
 }
 
+//////////////Section definition //////////////////
 .Top {
     display: flex;
     align-items: center;
@@ -43,25 +47,38 @@ body {
     }
 }
 
-/*  Left and Right are set sizes while the Middle is set to flex one so it occupies all remaining space. This could be set as a width too if prefereable, perhaps using calc.*/
 .Left {
     width: 240px;
 }
 
 .Middle {
-    flex: 1;
+    @media #{$medium-and-down} {
+        width: var(--mid-width);
+    }
+    transition: all 0.5s;
+    width: calc(100vw - 420px);
     background-color: #fff;
     border-radius: 6px;
     padding-top: 2px;
 }
 
 .Right {
+    @media #{$medium-and-down} {
+        right: var(--right-pos);
+    }
     position: absolute;
-    right: -10rem;
-    width: 12.5rem;
-    background-color: violet;
+    right: 0;
+    width: 180px;
+    transition: all 0.5s;
 }
 
+.drawerBtn{
+    transition: all 0.5s;
+    transform: rotate(var(--drawer))
+}
+
+
+//////////// Playback info and control Deck///////////////
 a {
     &.media-control {
 
@@ -82,6 +99,7 @@ a {
             background-color: #0000001a;
         }
     }
+
 }
 
 .list-heading {
@@ -124,6 +142,7 @@ h6.deckTitle {
     input[type=range]::-webkit-slider-runnable-track {
         box-shadow: var(--seekbar);
     }
+
     input[type=range]+.thumb {
         visibility: hidden;
     }

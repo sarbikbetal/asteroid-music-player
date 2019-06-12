@@ -1,20 +1,16 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// All of the Node.js APIs are available in this process.
 const { ipcRenderer } = require('electron');
 const { Howl, Howler } = require('howler');
 const StickyEvents = require('sticky-events').default;
+const jsmediatags = require('jsmediatags');
+
+
+console.log("This is the mainview renderer process");
+console.log(process.pid);
 
 var nowHowling = null // This is a howl object
 var nowPlaying = null// This is my custom song object
 var fullList = []
 var timer
-
-// Receives all the songs from Main Process
-ipcRenderer.on('songs', (e, songs) => {
-    var allSongs = songs;
-    populate(allSongs);
-})
 
 // Important DOM nodes
 var songView = document.getElementById('allSongs');
@@ -29,46 +25,205 @@ var mute = document.getElementsByClassName('vol')[0].firstElementChild
 var seekBar = document.getElementById('seekBar')
 var clientBtn = document.getElementById('clientBtn')
 var castBtn = document.getElementById('castBtn')
+var drawer = document.getElementById('drawer')
 
-// Experimental code
-const populate = (songs) => {
-    var i = 0;
-    songs.forEach(song => {
-        var songObj = new Song(song)
-        songObj.listId = i++
-        var base64
-        if (songObj.img) {
-            base64 = "data:image/jpeg;base64," + window.btoa(songObj.img);
-        } else {
-            base64 = "./assets/headphones.svg"
+
+/////////////////////// Receives all the songs from Main Process  ///////////////////////////
+ipcRenderer.on('songs', (e, songs) => {
+    var fs = require('fs');
+
+    let added = [];
+    let deleted = [];
+    let existing = JSON.parse(localStorage.getItem('urls')) || [];
+    let modified = [];
+
+    songs.forEach((song) => {
+        if (!existing.includes(song)) {
+            added.push(song)
         }
-        var newNode = makeTemplate(`
-        <div class="card horizontal waves-effect">
-        <div class="card-image">
-            <img src="${base64}">
-        </div>
-        <div class="card-stacked">
-            <div class="card-content">
-            <div class="row">
-            <div class="col s4"><p class="truncate">${songObj.title}</p></div>
-            <div class="col s3"><p class="truncate">${songObj.artist}</p></div>
-            <div class="col s3"><p class="truncate">${songObj.album}</p></div>
-            <div class="col s2"></div>
-            </div>
-            </div>
-            </div>
-        </div>`)
-        newNode.addEventListener("click", () => {
-            songObj.play();
-        })
-        songView.appendChild(newNode);
-        fullList.push(songObj);
-    });
-    console.log(fullList);
+    })
+
+    window.syncforeach(existing, (next, url, index, arr) => {
+        if (index < arr.length) {
+            fs.access(url, fs.F_OK, (err) => {
+                if (err) {
+                    deleted.push(existing[index])
+                    next()
+                } else {
+                    modified.push(existing[index])
+                    next()
+                }
+            })
+        }
+    }).done(() => {
+        console.log("File URLs Checked");
+        modified = modified.concat(added);
+        localStorage.setItem('urls', JSON.stringify(modified));
+        cacheSongs(added, deleted);
+    })
+
+
+
+    // let request = indexedDB.open('library', 1),
+    //     db,
+    //     tx,
+    //     store
+
+    // request.onerror = (e) => { console.log(e.target.errorCode); }
+
+    // request.onsuccess = (e) => {
+    //     db = request.result;
+
+    //     db.onerror = (e) => {
+    //         console.log("Error:" + e.target.errorCode);
+    //     }
+
+    // songs.forEach((song) => {
+    //     jsmediatags.read(song, {
+    //         onSuccess: (tag) => {
+    //             var image = tag.tags.picture;
+    //             var smallImg;
+    //             if (image) {
+    //                 var base64String = "";
+    //                 for (var i = 0; i < image.data.length; i++) {
+    //                     base64String += String.fromCharCode(image.data[i]);
+    //                 }
+    //                 smallImg = base64String
+    //             } else {
+    //                 smallImg = null
+    //             }
+    //             var sound = new Song({
+    //                 filename: path.basename(song),
+    //                 title: tag.tags.title,
+    //                 url: song,
+    //                 artist: tag.tags.artist,
+    //                 album: tag.tags.album,
+    //                 img: smallImg
+    //             });
+    //             populate(sound);
+
+    //             // tx = db.transaction("songs", "readwrite");
+    //             // store = tx.objectStore("songs");
+    //             // store.add(sound);
+    //         },
+    //         onError: (error) => {
+    //             console.error(':(', error.type, error.info, song);
+    //             var sound = new Song({
+    //                 filename: path.basename(song),
+    //                 url: song
+    //             });
+    //             populate(sound);
+    //             // tx = db.transaction("songs", "readwrite");
+    //             // store = tx.objectStore("songs");
+    //             // store.add(sound);
+    //         }
+    //     });
+    // });
+
+    // }
+
+    // request.onupgradeneeded = (e) => {
+    //     let db = request.result,
+    //         store = db.createObjectStore('songs', { keyPath: 'url' })
+    // }
+})
+
+function cacheSongs(add, remove) {
+    var path = require('path');
+
+    let songDB = JSON.parse(localStorage.getItem('songObjs')) || [];
+    let modified = [];
+
+    syncforeach(songDB, (next, song, index, array) => {
+        if (!remove.includes(song.url)) {
+            modified.push(song)
+        }
+        next()
+    }).done(() => {
+        syncforeach(add, (next, song, index, array) => {
+            jsmediatags.read(song, {
+                onSuccess: (tag) => {
+                    // var image = tag.tags.picture;
+                    var smallImg;
+                    // if (image) {
+                    //     var base64String = "";
+                    //     for (var i = 0; i < image.data.length; i++) {
+                    //         base64String += String.fromCharCode(image.data[i]);
+                    //     }
+                    //     smallImg = base64String
+                    // } else {
+                    //     smallImg = null
+                    // }
+                    var sound = new Song({
+                        filename: path.basename(song),
+                        title: tag.tags.title,
+                        url: song,
+                        artist: tag.tags.artist,
+                        album: tag.tags.album,
+                        img: smallImg
+                    });
+                    // populate(sound);
+                    modified.push(sound);
+                    next();
+                },
+                onError: (error) => {
+                    console.error(':(', error.type, error.info, song);
+                    var sound = new Song({
+                        filename: path.basename(song),
+                        url: song
+                    });
+                    // populate(sound);
+                    modified.push(sound)
+                    next();
+                }
+            });
+        }).done(() => {
+            console.log("Metadata Parsing Completed");
+            fullList = modified
+            localStorage.setItem('songObjs', JSON.stringify(modified));
+            populate();
+        });
+    })
 }
 
-// Volume control range slider
+///////////   Cast the received objects into Song object /////////////// 
+var i = 0;
+const populate = () => {
 
+    let songDB = JSON.parse(localStorage.getItem('songObjs'))
+    songDB.forEach((song) => {
+        song.listId = i++
+        var base64 = "./assets/headphones.svg"
+        // if (songObj.img) {
+        //     base64 = "data:image/jpeg;base64," + window.btoa(songObj.img);
+        // } else {
+        //     base64 = "./assets/headphones.svg"
+        // }
+        var newNode = makeTemplate(`
+            <div class="card horizontal waves-effect">
+            <div class="card-image">
+                <img src="${base64}">
+            </div>
+            <div class="card-stacked">
+                <div class="card-content">
+                <div class="row">
+                <div class="col s5"><p class="truncate">${song.title}</p></div>
+                <div class="col s4"><p class="truncate">${song.artist}</p></div>
+                <div class="col s3"><p class="truncate">${song.album}</p></div>
+                </div>
+                </div>
+                </div>
+            </div>`)
+        newNode.addEventListener("click", () => {
+            playNow(song)
+        })
+
+        songView.appendChild(newNode);
+    })
+    localStorage.setItem('songObjs', JSON.stringify(songDB))
+}
+
+////////////////   Volume control range slider   //////////////////////////
 
 if (!localStorage.volume) {
     vol.value = 100;
@@ -106,7 +261,7 @@ mute.addEventListener('click', () => {
 
 
 
-// Handle click events on media playback buttons
+/////////////////  Handle click events on media playback buttons /////////////////////////
 playPause.addEventListener('click', () => {
     if (nowHowling) {
         if (nowHowling.playing()) {
@@ -121,7 +276,7 @@ playPause.addEventListener('click', () => {
 
 nextBtn.addEventListener('click', () => {
     if (nowPlaying.listId != fullList.length - 1) {
-        fullList[nowPlaying.listId + 1].play()
+        playNow(fullList[nowPlaying.listId + 1])
     } else {
         M.toast({ html: '<span>End of playlist :(</span>', classes: 'rounded center-align' });
     }
@@ -129,13 +284,13 @@ nextBtn.addEventListener('click', () => {
 
 prevBtn.addEventListener('click', () => {
     if (nowPlaying.listId != 0) {
-        fullList[nowPlaying.listId - 1].play()
+        playNow(fullList[nowPlaying.listId - 1])
     } else {
         M.toast({ html: '<span>Nothing to play</span>', classes: 'rounded center-align' });
     }
 })
 
-// Seekbar(Progressbar)
+///////////////////////////// Seekbar(Progressbar)   /////////////////////////////
 seekBar.addEventListener('change', () => {
     var position = (seekBar.value / 100) * nowHowling.duration();
     nowHowling.seek(position);
@@ -154,7 +309,31 @@ function playProgress() {
     }
 }
 
-// My custom song object
+////////////////////////////  Right Navigation drawer ///////////////////////
+drawer.addEventListener('click', () => {
+    var open = drawer.toggleAttribute('open');
+    if (open != false) {
+        document.documentElement.style.setProperty('--mid-width', 'calc(100vw - 425px)');
+        document.documentElement.style.setProperty('--right-pos', '0px');
+        document.documentElement.style.setProperty('--drawer', '-180deg');
+    } else {
+        document.documentElement.style.setProperty('--mid-width', 'calc(100vw - 250px)');
+        document.documentElement.style.setProperty('--right-pos', '-180px');
+        document.documentElement.style.setProperty('--drawer', '0deg');
+    }
+});
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+/////////////////////      My custom song object   ///////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
 class Song {
     constructor(o) {
         this.filename = o.filename;
@@ -163,62 +342,76 @@ class Song {
         this.artist = (typeof o.artist === 'string') ? o.artist : "Unknown Artist";
         this.album = (typeof o.album === 'string') ? o.album : "Unknown Album";
         this.year = (typeof o.year === 'number') ? o.year : "--";
-        this.img = o.img;
+        this.img = o.img || null;
         this.listId = null;
-    }
-    play() {
-        var self = this;
-        Howler.unload();
-        nowPlaying = self;
-        nowHowling = new Howl({
-            src: self.url,
-            html5: true,
-            volume: vol.value / 100,
-            onload: function () {
-                var albumArt
-                if (self.img) {
-                    albumArt = "data:image/jpeg;base64," + window.btoa(self.img);
-                } else {
-                    albumArt = "./assets/headphones.svg"
-                }
-                trackTitle.innerHTML = self.title
-                trackArtist.innerHTML = self.artist
-                deckImg.setAttribute('src', albumArt)
-                if (localStorage.volume) {
-                    nowHowling.volume(localStorage.volume / 100)
-                }
-                nowHowling.play();
-            },
-            onplay: function () {
-                playPause.firstChild.setAttribute('src', './assets/buttons/pause.svg')
-                timer = setInterval(playProgress, 400)
-            },
-            onpause: function () {
-                playPause.firstChild.setAttribute('src', './assets/buttons/play_arrow.svg')
-                clearInterval(timer)
-            },
-            onplayerror: function () {
-                console.error('Error occured during playback');
-            },
-            onloaderror: function () {
-                console.error('Error occured during loading');
-            },
-            onend: function () {
-                clearInterval(timer)
-                nowHowling.off()
-                nowHowling.unload()
-                nowHowling = null
-                if (nowPlaying.listId != fullList.length - 1) {
-                    fullList[nowPlaying.listId + 1].play()
-                } else {
-                    M.toast({ html: '<span>End of playlist :(</span>', classes: 'rounded center-align' });
-                }
-            }
-        })
     }
 };
 
-// Playlist creation functions
+//////////////////////  Play the Song (Aaaahhhhhh!!! Finally)  ///////////////////////
+function playNow(song) {
+    Howler.unload();
+    nowPlaying = song;
+    nowHowling = new Howl({
+        src: song.url,
+        html5: true,
+        volume: vol.value / 100,
+        onload: function () {
+            jsmediatags.read(song.url, {
+                onSuccess: (tag) => {
+                    var image = tag.tags.picture;
+                    if (image) {
+                        var base64String = "";
+                        for (var i = 0; i < image.data.length; i++) {
+                            base64String += String.fromCharCode(image.data[i]);
+                        }
+                        albumArt = "data:" + image.format + ";base64," + window.btoa(base64String);
+                    } else {
+                        albumArt = "./assets/headphones.svg"
+                    }
+                    deckImg.setAttribute('src', albumArt)
+                },
+                onError: ()=>{
+                    deckImg.setAttribute('src', "./assets/headphones.svg")
+                }
+            });
+            trackTitle.innerHTML = song.title
+            trackArtist.innerHTML = song.artist
+            if (localStorage.volume) {
+                nowHowling.volume(localStorage.volume / 100)
+            }
+            nowHowling.play();
+        },
+        onplay: function () {
+            playPause.firstChild.setAttribute('src', './assets/buttons/pause.svg')
+            timer = setInterval(playProgress, 400)
+        },
+        onpause: function () {
+            playPause.firstChild.setAttribute('src', './assets/buttons/play_arrow.svg')
+            clearInterval(timer)
+        },
+        onplayerror: function () {
+            console.error('Error occured during playback');
+        },
+        onloaderror: function () {
+            console.error('Error occured during loading');
+        },
+        onend: function () {
+            clearInterval(timer)
+            nowHowling.off()
+            nowHowling.unload()
+            nowHowling = null
+            if (nowPlaying.listId != fullList.length - 1) {
+                playNow(fullList[nowPlaying.listId + 1])
+            } else {
+                M.toast({ html: '<span>End of playlist :(</span>', classes: 'rounded center-align' });
+            }
+        }
+    })
+}
+
+
+
+////////////////////// Playlist creation functions ////////////////////
 function newPlaylist(songs) {
     var id = 0;
     songs.forEach((song) => {
@@ -227,7 +420,7 @@ function newPlaylist(songs) {
     })
 }
 
-// string to html node creating function
+////////////// string to html node creating function  ///////////////////
 function makeTemplate(html) {
     var template = document.createElement('template');
     html = html.trim(); // Never return a text node of whitespace as the result
@@ -235,13 +428,14 @@ function makeTemplate(html) {
     return template.content.firstChild;
 }
 
-// Create new StickyEvents instance
+
+//////////////////////// sticky event listeners ////////////////////////////////
+
 const stickyEvents = new StickyEvents({
     container: document.querySelector('.Middle'),
     stickySelector: '.list-heading'
 });
 
-// Add sticky event listeners
 const { stickyElements } = stickyEvents;
 
 stickyElements.forEach(sticky => {
@@ -257,46 +451,72 @@ stickyElements.forEach(sticky => {
 
 
 
+//////////////////////// Server functions ////////////////////////////
+
+function broadcast() {
+    var http = require('http')
+    var fs = require('fs')
+    var ip = require('ip')
+
+    var server = http.createServer(function (req, res) {
+        if (nowPlaying != null) {
+            var filePath = nowPlaying.url;
+            var stat = fs.statSync(filePath);
+            var total = stat.size;
+            if (req.headers.range) {
+                var range = req.headers.range;
+                var parts = range.replace(/bytes=/, "").split("-");
+                var partialstart = parts[0];
+                var partialend = parts[1];
+                var start = parseInt(partialstart, 10);
+                var end = partialend ? parseInt(partialend, 10) : total - 1;
+                var chunksize = (end - start) + 1;
+                var readStream = fs.createReadStream(filePath, { start: start, end: end });
+                res.writeHead(206, {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET',
+                    'Content-Range': 'bytes ' + start + '-' + end + '/' + total,
+                    'Accept-Ranges': 'bytes', 'Content-Length': chunksize,
+                    'Content-Type': 'video/mp4'
+                });
+                readStream.pipe(res);
+            } else {
+                res.writeHead(200, {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET',
+                    'Content-Length': total,
+                    'Content-Type': 'audio/mpeg'
+                });
+                fs.createReadStream(filePath).pipe(res);
+            }
+        }
+    }).listen(2000);
+
+    console.log('Broadcasting on '+ip.address()+':2000');
 
 
-// //// Server functions //////////
+    ///////////////// Socket.io server ////////////////////////////
 
-// function broadcast() {
-//     var http = require('http')
-//     var fs = require('fs')
+    var socketServer = http.createServer().listen(2415)
+    const io = require('socket.io')(socketServer);
+    io.on('connect', client => {
+        console.log('client connected');
+        client.on('loaded', () => {
+            var now = nowHowling.seek();
+            io.emit('sync', now)
+            // time(now);
+            console.log(`Song loaded by client and synced to ${now}`);
+        })
+    });
 
-//     var server = http.createServer(function (request, response) {
-//         if (nowPlaying != null) {
-//             var stat = fs.statSync(nowPlaying.url);
-//             response.writeHead(200, {
-//                 'Access-Control-Allow-Origin': '*',
-//                 'Access-Control-Allow-Methods': 'GET',
-//                 'Content-Type': 'audio/mpeg',
-//                 'Content-Length': stat.size
-//             });
-//             fs.createReadStream(nowPlaying.url).pipe(response);
-//         }
-//     }).listen(2000);
+}
 
+//////////////////////////   Broadcast & Client button event listener ///////////////////////
 
-//     var socketServer = http.createServer().listen(2415)
-//     const io = require('socket.io')(socketServer);
-//     io.on('connect', client => {
-//         console.log('client connected');
-
-//         client.on('loaded', (time) => {
-//             var now = nowHowling.seek();
-//             time(now);
-//             console.log(`Song loaded by client and synced to ${now}`);
-//         })
-//     });
-// }
-
-// ///////   Cast & Client button event listener /////
-// clientBtn.addEventListener('click', () => {
-//     ipcRenderer.send('loadClient');
-// })
-// castBtn.addEventListener('click', () => {
-//     broadcast()
-//     console.log('Starting broadcast');
-// })
+clientBtn.addEventListener('click', () => {
+    ipcRenderer.send('loadClient');
+})
+castBtn.addEventListener('click', () => {
+    console.log('Starting broadcast');
+    broadcast()
+})

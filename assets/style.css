@@ -4975,6 +4975,9 @@ input[type=range]::-webkit-slider-thumb {
 
 :root {
   --seekbar: inset 0px 0px 0px 0px #18c76f;
+  --mid-width: calc(100vw - 250px);
+  --right-pos: -180px;
+  --drawer: 0deg;
 }
 
 body {
@@ -5019,23 +5022,38 @@ body {
   display: none;
 }
 
-/*  Left and Right are set sizes while the Middle is set to flex one so it occupies all remaining space. This could be set as a width too if prefereable, perhaps using calc.*/
 .Left {
   width: 240px;
 }
 
 .Middle {
-  flex: 1;
+  transition: all 0.5s;
+  width: calc(100vw - 420px);
   background-color: #fff;
   border-radius: 6px;
   padding-top: 2px;
 }
+@media only screen and (max-width : 992px) {
+  .Middle {
+    width: var(--mid-width);
+  }
+}
 
 .Right {
   position: absolute;
-  right: -10rem;
-  width: 12.5rem;
-  background-color: violet;
+  right: 0;
+  width: 180px;
+  transition: all 0.5s;
+}
+@media only screen and (max-width : 992px) {
+  .Right {
+    right: var(--right-pos);
+  }
+}
+
+.drawerBtn {
+  transition: all 0.5s;
+  transform: rotate(var(--drawer));
 }
 
 a.media-control {

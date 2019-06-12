@@ -9,20 +9,17 @@
 </head>
 
 <body>
-
-
+  <script src="node_modules/sync-foreach/sync-foreach.js"></script>
   <div class="Top">
     <div style="width:100%">
       <div class="row">
         <div class="col s10"></div>
-        <div class="col s1">
-          <a class="button waves-effect media-control" id="castBtn">
-            <img src="./assets/buttons/broadcast.svg">
+        <div class="col s2">
+          <a class="waves-effect" id="castBtn">
+            <img src="./assets/buttons/broadcast.svg" width="28">
           </a>
-        </div>
-        <div class="col s1">
-          <a class="button waves-effect media-control" id="clientBtn">
-            <img src="./assets/buttons/receive.svg">
+          <a class="waves-effect" id="clientBtn">
+            <img src="./assets/buttons/receive.svg" width="28">
           </a>
         </div>
       </div>
@@ -91,10 +88,14 @@
       <div class="row list-heading">
         <div class="card-panel z-depth-0" style="padding: 8px 8px 8px 64px; margin:0;">
           <div class="row">
-            <div class="col s4"><b>Title</b></div>
-            <div class="col s3"><b>Artist</b></div>
-            <div class="col s3"><b>Album</b></div>
-            <div class="col s2"></div>
+            <div class="col s5"><b>Title</b></div>
+            <div class="col s4"><b>Artist</b></div>
+            <div class="col s3" style="padding-right: 0;height: 21px;">
+              <b>Album</b>
+              <a class="waves-effect hide-on-large-only" id="drawer" style="float: right;height: 21px;">
+                <img class="drawerBtn" src="./assets/buttons/drawer.svg" height="21">
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -107,7 +108,13 @@
     </div>
 
     <!-- PlayQueue and others -->
-    <div class="Right">Right Content</div>
+    <div class="Right">
+      <div class="row">
+        <div class="col 12">
+          <h4>Play queue</h4>
+        </div>
+      </div>
+    </div>
   </div>
 
 

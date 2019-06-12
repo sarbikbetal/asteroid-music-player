@@ -4,20 +4,36 @@
   "description": "Yet Another Music Player - A minimal Electron application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "linux": "electron-builder -l"
   },
-  "author": "Sarbik",
+  "build": {
+    "linux": {
+      "target": "deb",
+      "category": "audio"
+    },
+    "files": {
+      "filter": [
+        "!**/materialize",
+        "!**/search"
+      ]
+    }
+  },
+  "author": "Sarbik Betal <sarbikb55@gmail.com> (https://github.com/sarbikbetal)",
   "license": "MIT",
   "devDependencies": {
     "electron": "^5.0.0",
+    "electron-packager": "^13.1.1",
     "electron-process-manager": "^0.7.1",
     "electron-reload": "^1.4.0"
   },
   "dependencies": {
     "electron-window-state": "^5.0.3",
     "howler": "^2.1.2",
+    "ip": "^1.1.5",
     "jsmediatags": "^3.8.1",
     "socket.io": "^2.2.0",
-    "sticky-events": "^2.4.0"
+    "sticky-events": "^2.4.0",
+    "sync-foreach": "^1.0.2"
   }
 }

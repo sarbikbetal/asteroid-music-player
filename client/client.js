@@ -9,18 +9,15 @@ var sound;
 var socket = io('http://localhost:2415');
 
 socket.on('connect', () => {
-    // sound.seek(data);
-    // sound.play()
-    // console.log(`Playback continued from ${data}`);
     loadSong()
     console.log(`connected to socket io server`);
 });
 
-// socket.on('time', function (data) {
-//     console.log(data);
-//     console.log('syncing to ' + data);
-
-// });
+socket.on('sync', (data) => {
+    console.log(data);
+    sound.seek(data);
+    sound.play();
+});
 
 function loadSong() {
     sound = new Howl({
@@ -32,13 +29,7 @@ function loadSong() {
         },
         onload: function () {
             console.log('Song loaded from localhost');
-            socket.emit('loaded', (data) => {
-                console.log(data);
-                sound.play();
-                sound.seek(data);
-            });
+            socket.emit('loaded');
         }
     });
 }
-
-var acd = new Howl()
