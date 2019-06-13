@@ -2,9 +2,19 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const state = require('electron-window-state');
 
-// Dev dependency
+
+
+//////////////////////// Dev dependencies  //////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////// Comment these out befor building   //////////////////////////
+
 // const { openProcessManager } = require('electron-process-manager');
 require('electron-reload')(__dirname)
+console.log(`${process.type}:${process.pid}`);
+
+///////////////////////////////////////////////////////////////////////////
+
+
 
 
 // Invoke the file listing function
@@ -43,7 +53,7 @@ app.on('ready', () => {
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
 
-  // Open the DevTools.
+  ///////////// Open the DevTools.///////////
   mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.

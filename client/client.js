@@ -2,7 +2,7 @@ const { Howl, Howler } = require('howler');
 const io = require('socket.io-client')
 
 console.log("This is the client renderer process");
-console.log(process.pid);
+console.log(`${process.type}:${process.pid}`);
 
 
 var sound;
@@ -12,6 +12,13 @@ socket.on('connect', () => {
     loadSong()
     console.log(`connected to socket io server`);
 });
+
+socket.on('disconnect',()=>{
+    if(sound){
+        sound.stop()
+    }
+    console.log("Disconnected from server");
+})
 
 socket.on('sync', (data) => {
     console.log(data);

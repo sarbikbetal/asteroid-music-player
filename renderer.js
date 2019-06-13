@@ -5,7 +5,7 @@ const jsmediatags = require('jsmediatags');
 
 
 console.log("This is the mainview renderer process");
-console.log(process.pid);
+console.log(`${process.type}:${process.pid}`);
 
 var nowHowling = null // This is a howl object
 var nowPlaying = null// This is my custom song object
@@ -370,7 +370,7 @@ function playNow(song) {
                     }
                     deckImg.setAttribute('src', albumArt)
                 },
-                onError: ()=>{
+                onError: () => {
                     deckImg.setAttribute('src', "./assets/headphones.svg")
                 }
             });
@@ -492,14 +492,12 @@ function broadcast() {
         }
     }).listen(2000);
 
-    console.log('Broadcasting on '+ip.address()+':2000');
-
-
     ///////////////// Socket.io server ////////////////////////////
-
+    var clients = []
     var socketServer = http.createServer().listen(2415)
     const io = require('socket.io')(socketServer);
     io.on('connect', client => {
+        clients.push(client)
         console.log('client connected');
         client.on('loaded', () => {
             var now = nowHowling.seek();
@@ -509,6 +507,25 @@ function broadcast() {
         })
     });
 
+
+    console.log('Broadcasting on ' + ip.address() + ':2000');
+    castBtn.removeEventListener('click', broadcast);
+    castBtn.addEventListener('click', stopCast)
+
+    ///////////////////////// Stop the servers ///////////////////////////
+
+    function stopCast() {
+        clients.forEach((client) => {
+            client.disconnect(true)
+        })
+        io.close()
+        socketServer.close()
+        server.close()
+        console.log("Servers stopped");
+        castBtn.addEventListener('click', broadcast);
+        castBtn.removeEventListener('click', stopCast);
+    }
+
 }
 
 //////////////////////////   Broadcast & Client button event listener ///////////////////////
@@ -516,7 +533,4 @@ function broadcast() {
 clientBtn.addEventListener('click', () => {
     ipcRenderer.send('loadClient');
 })
-castBtn.addEventListener('click', () => {
-    console.log('Starting broadcast');
-    broadcast()
-})
+castBtn.addEventListener('click', broadcast)
