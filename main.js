@@ -1,7 +1,8 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, ipcMain } = require('electron')
 const state = require('electron-window-state');
-
+const fs = require('fs');
+// const syncforeach = require('sync-foreach')
 
 
 //////////////////////// Dev dependencies  //////////////////////////////////
@@ -9,16 +10,10 @@ const state = require('electron-window-state');
 /////////////// Comment these out befor building   //////////////////////////
 
 // const { openProcessManager } = require('electron-process-manager');
-require('electron-reload')(__dirname)
+// require('electron-reload')(__dirname)
 console.log(`${process.type}:${process.pid}`);
 
 ///////////////////////////////////////////////////////////////////////////
-
-
-
-
-// Invoke the file listing function
-var musicObjects = loadFiles()
 
 let mainWindow
 // This method will be called when Electron has finished
@@ -38,8 +33,8 @@ app.on('ready', () => {
     height: winState.height,
     x: winState.x,
     y: winState.y,
-    minHeight: 400,
-    minWidth: 600,
+    minHeight: 600,
+    minWidth: 850,
     webPreferences: {
       nodeIntegration: true
     }
@@ -54,7 +49,7 @@ app.on('ready', () => {
   mainWindow.loadFile('index.html')
 
   ///////////// Open the DevTools.///////////
-  mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -66,7 +61,7 @@ app.on('ready', () => {
 
   // Sends the song object array to renderer process
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send('songs', musicObjects);
+    mainWindow.webContents.send('songs', loadFiles());
     console.log("objects sent");
   })
 
@@ -74,6 +69,10 @@ app.on('ready', () => {
   ipcMain.on('loadClient', () => {
     console.log("Loading client page");
     mainWindow.loadFile('./client/client.html')
+  })
+  ipcMain.on('config', () => {
+    mainWindow.webContents.send('songs', loadFiles());
+    console.log("objects sent");
   })
 })
 
@@ -95,72 +94,38 @@ app.on('activate', function () {
 
 
 // Traverses the given directory and searches for mp3 files and returs a song object
-function loadFiles() {
 
+var walkSync = function (dir, filelist) {
   var path = path || require('path');
-
-  var walkSync = function (dir, filelist) {
-    var fs = fs || require('fs'),
-      files = fs.readdirSync(dir);
-    filelist = filelist || [];
-    files.forEach(function (file) {
-      if (fs.statSync(path.join(dir, file)).isDirectory()) {
-        filelist = walkSync(path.join(dir, file), filelist);
+  var fs = fs || require('fs'),
+    files = fs.readdirSync(dir);
+  filelist = filelist || [];
+  files.forEach(function (file) {
+    if (fs.statSync(path.join(dir, file)).isDirectory()) {
+      filelist = walkSync(path.join(dir, file), filelist);
+    }
+    else {
+      // In case of audio files...
+      if (file.indexOf('.mp3') == file.length - 4) {
+        filelist.push(path.join(dir, file));
       }
-      else {
-        // In case of audio files...
-        if (file.indexOf('.mp3') == file.length - 4) {
-          filelist.push(path.join(dir, file));
-        }
-      }
-    });
-    return filelist;
-  };
+    }
+  });
+  return filelist;
+};
 
-  var musicDirs = walkSync("/mnt/media/Songs");
-//  var musicDirs = walkSync(__dirname + "/search");
 
-  // var songs = [];
+function loadFiles() {
+  var urls = [];
+  var json = fs.readFileSync('./assets/config.json')
+  json = JSON.parse(json);
+  json.directories.forEach((dir) => {
+    var batch = walkSync(dir);
+    urls = urls.concat(batch);
+  })
+  console.log(urls);
+  return urls
 
-  // musicDirs.forEach((song) => {
+};
 
-  //   jsmediatags.read(song, {
-  //     onSuccess: (tag) => {
-  //       var image = tag.tags.picture;
-  //       var smallImg;
-  //       if (image) {
-  //         var base64String = "";
-  //         for (var i = 0; i < image.data.length; i++) {
-  //           base64String += String.fromCharCode(image.data[i]);
-  //         }
-  //         smallImg = base64String
-  //       } else {
-  //         smallImg = null
-  //       }
-  //       var sound = new Object({
-  //         filename: path.basename(song),
-  //         title: tag.tags.title,
-  //         url: song,
-  //         artist: tag.tags.artist,
-  //         album: tag.tags.album,
-  //         img: smallImg
-  //       });
-  //       songs.push(sound);
-  //     },
-  //     onError: (error) => {
-  //       console.error(':(', error.type, error.info, song);
-  //       var sound = new Object({
-  //         filename: path.basename(song),
-  //         url: song
-  //       });
-  //       songs.push(sound);
-  //     }
-  //   });
-  // });
-
-  // console.log(songs)
-  // return songs
-
-  return musicDirs
-}
 

@@ -16,4 +16,7 @@ $ cd YAMP
 $ npm install
 ```
 The sources available now are for my testing purpose only so please change line 104 in [main.js](https://github.com/sarbikbetal/YAMP/blob/master/main.js) to a valid directory with some songs(currently only mp3) in it.
-And once installation is complete run `$ npm start` to start the app, and if anything goes wrong open your running termina and hit `Ctrl+C` to stop.
+And once installation is complete run `$ npm start` to start the app, and if anything goes wrong open your running terminal and hit `Ctrl+C` to stop.
+
+## Building
+For building the app [electron-builder](https://www.electron.build/) is used. Just run `$ npm run-script build` to get your package ready in the `/dist` folder.

@@ -9,21 +9,46 @@
 </head>
 
 <body>
-  <script src="node_modules/sync-foreach/sync-foreach.js"></script>
-  <div class="Top">
-    <div style="width:100%">
+
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <h4>Settings</h4>
       <div class="row">
-        <div class="col s10"></div>
-        <div class="col s2">
-          <a class="waves-effect" id="castBtn">
-            <img src="./assets/buttons/broadcast.svg" width="28">
-          </a>
-          <a class="waves-effect" id="clientBtn">
-            <img src="./assets/buttons/receive.svg" width="28">
-          </a>
+        <div class="col s10">
+          <h5>Directories</h5>
+        </div>
+        <div class="col s2 right-align">
+          <input class="custom-file-input btn-flat" type="file" id="FileUpload"
+            webkitdirectory />
+        </div>
+        <div class="col s12">
+          <ul class="collection" id="selectedDirs">
+          </ul>
         </div>
       </div>
     </div>
+    <div class="modal-footer">
+      <a href="#!" id="saveSettings" class="modal-close waves-effect waves-green btn-flat"">SAVE</a>
+    </div>
+  </div>
+
+  <div class="Top">
+    <div class="row" style="width:100%; margin:0">
+      <div class="col s10">
+      </div>
+      <div class="col s2">
+        <a class="uiIcon waves-effect" id="castBtn" data-tooltip="Start broadcast">
+          <img src="./assets/buttons/broadcast_off.svg">
+        </a>
+        <a class="uiIcon waves-effect" id="clientBtn" data-tooltip="Receive broadcast">
+          <img src="./assets/buttons/receive.svg">
+        </a>
+        <a class="uiIcon waves-effect modal-trigger" id="settings" data-tooltip="Settings" data-target="settingsModal">
+          <img src="./assets/buttons/settings.svg">
+        </a>
+      </div>
+    </div>
+    <!-- </div> -->
   </div>
 
   <!-- Scrolling container -->
@@ -117,12 +142,11 @@
     </div>
   </div>
 
-
+  <script src="node_modules/sync-foreach/sync-foreach.js"></script>
   <script>
-    // You can also require other files to run in this process
+    require('./assets/materialize.min.js')
     require('./renderer.js')
   </script>
-  <script src="assets/materialize.min.js"></script>
 </body>
 
 </html>

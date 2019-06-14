@@ -5,6 +5,26 @@
     --drawer: 0deg;
 }
 
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #e4e4e4;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #c2c2c2;
+    border-radius: 4px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #8f8f8f;
+}
+
 body {
     overflow-x: hidden;
     background: rgb(255, 255, 255);
@@ -18,15 +38,13 @@ body {
     justify-content: center;
     font-size: 3rem;
     position: relative;
-    height: 56px;
+    height: 64px;
 }
 
 .Container {
     display: flex;
     overflow: hidden;
-    height: 100vh;
-    margin-top: -64px;
-    padding-top: 64px;
+    height: calc(100vh - 64px);
     position: relative;
     width: 100%;
     backface-visibility: hidden;
@@ -41,20 +59,21 @@ body {
     padding: .5rem;
     -webkit-overflow-scrolling: touch;
     -ms-overflow-style: none;
+}
+
+.Left {
+    width: 240px;
 
     &::-webkit-scrollbar {
         display: none;
     }
 }
 
-.Left {
-    width: 240px;
-}
-
 .Middle {
     @media #{$medium-and-down} {
         width: var(--mid-width);
     }
+
     transition: all 0.5s;
     width: calc(100vw - 420px);
     background-color: #fff;
@@ -66,13 +85,18 @@ body {
     @media #{$medium-and-down} {
         right: var(--right-pos);
     }
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
     position: absolute;
     right: 0;
     width: 180px;
     transition: all 0.5s;
 }
 
-.drawerBtn{
+.drawerBtn {
     transition: all 0.5s;
     transform: rotate(var(--drawer))
 }
@@ -145,5 +169,66 @@ h6.deckTitle {
 
     input[type=range]+.thumb {
         visibility: hidden;
+    }
+}
+
+/////////////////////////////  Icons /////////////////////////////////////
+
+.uiIcon {
+    @extend .btn-floating;
+    @extend .btn-small;
+    @extend .z-depth-0;
+
+    background-color: #00000000;
+
+    &:hover {
+        background-color: #0000001e;
+    }
+
+    img {
+        margin: 4px;
+    }
+}
+
+/////////////////////////// Settings /////////////////////////////////////////
+
+///////////////// File Input  ///////////
+.custom-file-input {
+    width: 52px;
+    height: 36px;
+    color: transparent;
+    background-color: #81C784;
+    margin: 9px 0 5px 0;
+
+    &::-webkit-file-upload-button {
+        visibility: hidden;
+    }
+
+    &::before {
+        content: '+';
+        font-size: 32px;
+        color: #000;
+    }
+
+    &:focus {
+        border-color: transparent;
+        background-color: #3dca4498;
+    }
+
+    &:hover {
+        background-color: #3dca44d2;
+    }
+
+    &:active {
+        background-color: #3dca4498;
+    }
+}
+
+////////////////////// Directories //////////////////
+#selectedDirs {
+    a:hover {
+        img {
+            background-color: orangered;
+        }
     }
 }

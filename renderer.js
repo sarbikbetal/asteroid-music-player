@@ -2,7 +2,7 @@ const { ipcRenderer } = require('electron');
 const { Howl, Howler } = require('howler');
 const StickyEvents = require('sticky-events').default;
 const jsmediatags = require('jsmediatags');
-
+const fs = require('fs');
 
 console.log("This is the mainview renderer process");
 console.log(`${process.type}:${process.pid}`);
@@ -30,7 +30,12 @@ var drawer = document.getElementById('drawer')
 
 /////////////////////// Receives all the songs from Main Process  ///////////////////////////
 ipcRenderer.on('songs', (e, songs) => {
-    var fs = require('fs');
+    var path = require('path');
+
+    var dirs = new Set()
+    songs.forEach((song) => { dirs.add(path.dirname(song)) })
+    dirs = Array.from(dirs)
+
 
     let added = [];
     let deleted = [];
@@ -46,7 +51,7 @@ ipcRenderer.on('songs', (e, songs) => {
     window.syncforeach(existing, (next, url, index, arr) => {
         if (index < arr.length) {
             fs.access(url, fs.F_OK, (err) => {
-                if (err) {
+                if (err || !dirs.includes(path.dirname(url))) {
                     deleted.push(existing[index])
                     next()
                 } else {
@@ -455,7 +460,6 @@ stickyElements.forEach(sticky => {
 
 function broadcast() {
     var http = require('http')
-    var fs = require('fs')
     var ip = require('ip')
 
     var server = http.createServer(function (req, res) {
@@ -477,7 +481,7 @@ function broadcast() {
                     'Access-Control-Allow-Methods': 'GET',
                     'Content-Range': 'bytes ' + start + '-' + end + '/' + total,
                     'Accept-Ranges': 'bytes', 'Content-Length': chunksize,
-                    'Content-Type': 'video/mp4'
+                    'Content-Type': 'audio/mpeg'
                 });
                 readStream.pipe(res);
             } else {
@@ -509,8 +513,10 @@ function broadcast() {
 
 
     console.log('Broadcasting on ' + ip.address() + ':2000');
+    castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast.svg');
+    castBtn.setAttribute('data-tooltip', "Stop broadcast");
     castBtn.removeEventListener('click', broadcast);
-    castBtn.addEventListener('click', stopCast)
+    castBtn.addEventListener('click', stopCast);
 
     ///////////////////////// Stop the servers ///////////////////////////
 
@@ -521,12 +527,17 @@ function broadcast() {
         io.close()
         socketServer.close()
         server.close()
+        castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast_off.svg')
         console.log("Servers stopped");
-        castBtn.addEventListener('click', broadcast);
         castBtn.removeEventListener('click', stopCast);
+        castBtn.addEventListener('click', broadcast);
+        castBtn.setAttribute('data-tooltip', "Start broadcast")
     }
 
 }
+
+////////////////////////// Tooltips for buttons ////////////////////////////////////////////
+M.Tooltip.init(document.querySelectorAll('.uiIcon'), { position: 'bottom', margin: 2, transitionMovement: 8, exitDelay: 50 })
 
 //////////////////////////   Broadcast & Client button event listener ///////////////////////
 
@@ -534,3 +545,55 @@ clientBtn.addEventListener('click', () => {
     ipcRenderer.send('loadClient');
 })
 castBtn.addEventListener('click', broadcast)
+
+/////////////////////////    Settings button       /////////////////////////////////
+
+/// Directory settings ///
+M.Modal.init(document.querySelectorAll('.modal'), { opacity: 0.8 });
+
+
+document.getElementById('FileUpload').addEventListener('change', (e) => { selectFolder(e) })
+document.getElementById('saveSettings').addEventListener('click', saveSettings)
+
+
+var json; // This is the config.json File object// 
+
+function makeDirList(dir) {
+    let node = makeTemplate(`<li class="collection-item dirs"><div>${dir}<a class="secondary-content waves-effect"><img src="./assets/buttons/close.svg"></a></div></li>`);
+    document.getElementById('selectedDirs').appendChild(node);
+    let btn = document.querySelectorAll('.dirs a')[document.querySelectorAll('.dirs a').length - 1]
+    btn.addEventListener('click', () => {
+        btn.parentElement.parentNode.remove();
+        json.directories.splice(json.directories.indexOf(dir), 1);
+    })
+}
+
+function selectFolder(e) {
+    json.directories.push(e.target.files[0].path);
+    makeDirList(e.target.files[0].path)
+};
+
+document.getElementById('settings').addEventListener('click', () => {
+    fs.readFile('./assets/config.json', (err, data) => {
+        if (err) throw err;
+        document.querySelectorAll('.dirs').forEach((node) => {
+            node.remove();
+        })
+        json = JSON.parse(data);
+        json.directories.forEach((dir) => {
+            makeDirList(dir);
+        })
+    });
+})
+
+
+
+function saveSettings() {
+    var dirs = new Set()
+    json.directories.forEach((dir) => { dirs.add(dir) })
+    json.directories = Array.from(dirs)
+    fs.writeFile('./assets/config.json', JSON.stringify(json), (err) => {
+        if (err) throw err;
+        ipcRenderer.send('config');
+    });
+};
