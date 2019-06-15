@@ -123,9 +123,7 @@ function loadFiles() {
     var batch = walkSync(dir);
     urls = urls.concat(batch);
   })
-  console.log(urls);
   return urls
-
 };
 
 

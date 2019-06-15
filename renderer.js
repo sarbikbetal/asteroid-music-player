@@ -32,10 +32,11 @@ var drawer = document.getElementById('drawer')
 ipcRenderer.on('songs', (e, songs) => {
     var path = require('path');
 
+    songView.innerHTML = '<div class="progress"><div class="indeterminate"></div></div><div class="container center-align"><h3>Hold on, we are adding your music</h3><h4>Parsing music metadata...</h4></div>';
+
     var dirs = new Set()
     songs.forEach((song) => { dirs.add(path.dirname(song)) })
     dirs = Array.from(dirs)
-
 
     let added = [];
     let deleted = [];
@@ -196,6 +197,18 @@ var i = 0;
 const populate = () => {
 
     let songDB = JSON.parse(localStorage.getItem('songObjs'))
+
+    songView.innerHTML = '<div class="progress"><div class="indeterminate"></div></div><div class="container center-align"><h3>Hold on, we are adding your music</h3><h4>Arranging your music library...</h4></div>';
+    songDB.sort((a, b) => {
+        let s1 = a.title.toLowerCase(), s2 = b.title.toLowerCase()
+        if (s1 < s2)
+            return -1
+        if (s1 > s2)
+            return 1
+        return 0
+    })
+
+    songView.innerHTML = '';
     songDB.forEach((song) => {
         song.listId = i++
         var base64 = "./assets/headphones.svg"
@@ -227,6 +240,9 @@ const populate = () => {
     })
     localStorage.setItem('songObjs', JSON.stringify(songDB))
 }
+
+////////////////   Song sorting function //////////////////////
+M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), {coverTrigger: false});
 
 ////////////////   Volume control range slider   //////////////////////////
 
@@ -538,6 +554,7 @@ function broadcast() {
 
 ////////////////////////// Tooltips for buttons ////////////////////////////////////////////
 M.Tooltip.init(document.querySelectorAll('.uiIcon'), { position: 'bottom', margin: 2, transitionMovement: 8, exitDelay: 50 })
+M.Tooltip.init(document.querySelectorAll('#sort'), { position: 'bottom', margin: 2, transitionMovement: 8, exitDelay: 50 })
 
 //////////////////////////   Broadcast & Client button event listener ///////////////////////
 
