@@ -548,9 +548,11 @@ function broadcast() {
 
 
     console.log('Broadcasting on ' + ip.address() + ':2000');
-    M.toast({ html: `<span>Broadcasting on ${ip.address()}:2000</span>`, classes: 'rounded center-align' });
     castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast.svg');
-    castBtn.setAttribute('data-tooltip', `${ip.address()}:2000 | Stop broadcast`);
+    castBtn.style.setProperty('flex-grow',1);
+    castBtn.style.setProperty('background-color','#fff');
+    castBtn.appendChild(makeTemplate(`<span>${ip.address()}:2000</span>`))
+    castBtn.setAttribute('data-tooltip', `Stop broadcast`);
     castBtn.removeEventListener('click', broadcast);
     castBtn.addEventListener('click', stopCast);
 
@@ -563,11 +565,16 @@ function broadcast() {
         io.close()
         socketServer.close()
         server.close()
-        castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast_off.svg')
+      
         console.log("Servers stopped");
+      
+        castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast_off.svg')
         castBtn.removeEventListener('click', stopCast);
         castBtn.addEventListener('click', broadcast);
         castBtn.setAttribute('data-tooltip', "Start broadcast")
+        castBtn.style.setProperty('flex-grow',0);
+        castBtn.style.setProperty('background-color','#00000000');
+        castBtn.querySelector('span').remove();
     }
 
 }

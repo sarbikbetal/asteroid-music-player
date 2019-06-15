@@ -36,7 +36,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3rem;
     position: relative;
     height: 64px;
 }
@@ -175,11 +174,10 @@ h6.deckTitle {
 /////////////////////////////  Icons /////////////////////////////////////
 
 .uiIcon {
-    @extend .btn-floating;
-    @extend .btn-small;
     @extend .z-depth-0;
 
     background-color: #00000000;
+    margin: 2px;
 
     &:hover {
         background-color: #0000001e;
@@ -187,6 +185,24 @@ h6.deckTitle {
 
     img {
         margin: 4px;
+    }
+}
+
+.stc {
+    @extend .btn-floating;
+    @extend .btn-small;
+}
+
+.dyn {
+    font-size: 14px;
+    border-radius: 32px;
+    transition: all 0.4s;
+    line-height: 32px;
+    text-align: right;
+    display: flex;
+    justify-content: flex-start;
+    span{
+        padding-left: 8px;
     }
 }
 

@@ -2613,11 +2613,11 @@ a {
 }
 
 /* 2dp elevation modified*/
-.z-depth-1, .dropdown-content, .btn-floating, .uiIcon, .btn, .btn-small, .btn-large, .toast, .card, .card-panel {
+.z-depth-1, .dropdown-content, .btn-floating, .stc, .btn, .btn-small, .btn-large, .toast, .card, .card-panel {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
 }
 
-.z-depth-1-half, .btn-floating:hover, .uiIcon:hover, .btn:hover, .btn-small:hover, .btn-large:hover {
+.z-depth-1-half, .btn-floating:hover, .stc:hover, .btn:hover, .btn-small:hover, .btn-large:hover {
   box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.14), 0 1px 7px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -1px rgba(0, 0, 0, 0.2);
 }
 
@@ -4371,13 +4371,13 @@ small {
 .card .card-action:last-child {
   border-radius: 0 0 2px 2px;
 }
-.card .card-action a:not(.btn):not(.btn-small):not(.uiIcon):not(.btn-large):not(.btn-large):not(.btn-floating):not(.uiIcon) {
+.card .card-action a:not(.btn):not(.btn-small):not(.stc):not(.btn-large):not(.btn-large):not(.btn-floating):not(.stc) {
   color: #ffab40;
   margin-right: 24px;
   transition: color 0.3s ease;
   text-transform: uppercase;
 }
-.card .card-action a:not(.btn):not(.btn-small):not(.uiIcon):not(.btn-large):not(.btn-large):not(.btn-floating):not(.uiIcon):hover {
+.card .card-action a:not(.btn):not(.btn-small):not(.stc):not(.btn-large):not(.btn-large):not(.btn-floating):not(.stc):hover {
   color: #ffd8a6;
 }
 .card .card-reveal {
@@ -4497,7 +4497,7 @@ small {
   visibility: hidden;
 }
 
-.btn, .btn-small, .uiIcon, .btn-large,
+.btn, .btn-small, .stc, .btn-large,
 .btn-flat {
   border: none;
   border-radius: 2px;
@@ -4512,19 +4512,19 @@ small {
 
 .btn.disabled,
 .btn-floating.disabled,
-.disabled.uiIcon,
+.disabled.stc,
 .btn-large.disabled,
 .btn-small.disabled,
 .btn-flat.disabled,
 .btn:disabled,
 .btn-floating:disabled,
-.uiIcon:disabled,
+.stc:disabled,
 .btn-large:disabled,
 .btn-small:disabled,
 .btn-flat:disabled,
 .btn[disabled],
 .btn-floating[disabled],
-[disabled].uiIcon,
+[disabled].stc,
 .btn-large[disabled],
 .btn-small[disabled],
 .btn-flat[disabled] {
@@ -4536,19 +4536,19 @@ small {
 }
 .btn.disabled:hover,
 .btn-floating.disabled:hover,
-.disabled.uiIcon:hover,
+.disabled.stc:hover,
 .btn-large.disabled:hover,
 .btn-small.disabled:hover,
 .btn-flat.disabled:hover,
 .btn:disabled:hover,
 .btn-floating:disabled:hover,
-.uiIcon:disabled:hover,
+.stc:disabled:hover,
 .btn-large:disabled:hover,
 .btn-small:disabled:hover,
 .btn-flat:disabled:hover,
 .btn[disabled]:hover,
 .btn-floating[disabled]:hover,
-[disabled].uiIcon:hover,
+[disabled].stc:hover,
 .btn-large[disabled]:hover,
 .btn-small[disabled]:hover,
 .btn-flat[disabled]:hover {
@@ -4558,7 +4558,7 @@ small {
 
 .btn,
 .btn-floating,
-.uiIcon,
+.stc,
 .btn-large,
 .btn-small,
 .btn-flat {
@@ -4567,7 +4567,7 @@ small {
 }
 .btn i,
 .btn-floating i,
-.uiIcon i,
+.stc i,
 .btn-large i,
 .btn-small i,
 .btn-flat i {
@@ -4575,12 +4575,12 @@ small {
   line-height: inherit;
 }
 
-.btn:focus, .btn-small:focus, .uiIcon:focus, .btn-large:focus,
+.btn:focus, .btn-small:focus, .stc:focus, .btn-large:focus,
 .btn-floating:focus {
   background-color: #1d7d74;
 }
 
-.btn, .btn-small, .uiIcon, .btn-large {
+.btn, .btn-small, .stc, .btn-large {
   text-decoration: none;
   color: #fff;
   background-color: #26a69a;
@@ -4589,11 +4589,11 @@ small {
   transition: background-color 0.2s ease-out;
   cursor: pointer;
 }
-.btn:hover, .btn-small:hover, .uiIcon:hover, .btn-large:hover {
+.btn:hover, .btn-small:hover, .stc:hover, .btn-large:hover {
   background-color: #2bbbad;
 }
 
-.btn-floating, .uiIcon {
+.btn-floating, .stc {
   display: inline-block;
   color: #fff;
   position: relative;
@@ -4609,43 +4609,43 @@ small {
   cursor: pointer;
   vertical-align: middle;
 }
-.btn-floating:hover, .uiIcon:hover {
+.btn-floating:hover, .stc:hover {
   background-color: #26a69a;
 }
-.btn-floating:before, .uiIcon:before {
+.btn-floating:before, .stc:before {
   border-radius: 0;
 }
-.btn-floating.btn-large, .btn-large.uiIcon {
+.btn-floating.btn-large, .btn-large.stc {
   width: 56px;
   height: 56px;
   padding: 0;
 }
-.btn-floating.btn-large.halfway-fab, .btn-large.halfway-fab.uiIcon {
+.btn-floating.btn-large.halfway-fab, .btn-large.halfway-fab.stc {
   bottom: -28px;
 }
-.btn-floating.btn-large i, .btn-large.uiIcon i {
+.btn-floating.btn-large i, .btn-large.stc i {
   line-height: 56px;
 }
-.btn-floating.btn-small, .btn-floating.uiIcon, .uiIcon {
+.btn-floating.btn-small, .btn-floating.stc, .stc {
   width: 32.4px;
   height: 32.4px;
 }
-.btn-floating.btn-small.halfway-fab, .halfway-fab.uiIcon {
+.btn-floating.btn-small.halfway-fab, .halfway-fab.stc {
   bottom: -16.2px;
 }
-.btn-floating.btn-small i, .btn-floating.uiIcon i, .uiIcon i {
+.btn-floating.btn-small i, .btn-floating.stc i, .stc i {
   line-height: 32.4px;
 }
-.btn-floating.halfway-fab, .halfway-fab.uiIcon {
+.btn-floating.halfway-fab, .halfway-fab.stc {
   position: absolute;
   right: 24px;
   bottom: -20px;
 }
-.btn-floating.halfway-fab.left, .halfway-fab.left.uiIcon {
+.btn-floating.halfway-fab.left, .halfway-fab.left.stc {
   right: auto;
   left: 24px;
 }
-.btn-floating i, .uiIcon i {
+.btn-floating i, .stc i {
   width: inherit;
   display: inline-block;
   text-align: center;
@@ -4654,7 +4654,7 @@ small {
   line-height: 40px;
 }
 
-button.btn-floating, button.uiIcon {
+button.btn-floating, button.stc {
   border: none;
 }
 
@@ -4757,7 +4757,7 @@ button.btn-floating, button.uiIcon {
 .fixed-action-btn ul li {
   margin-bottom: 15px;
 }
-.fixed-action-btn ul a.btn-floating, .fixed-action-btn ul a.uiIcon {
+.fixed-action-btn ul a.btn-floating, .fixed-action-btn ul a.stc {
   opacity: 0;
 }
 .fixed-action-btn .fab-backdrop {
@@ -4801,12 +4801,12 @@ button.btn-floating, button.uiIcon {
   font-size: 1.6rem;
 }
 
-.btn-small, .uiIcon {
+.btn-small, .stc {
   height: 32.4px;
   line-height: 32.4px;
   font-size: 13px;
 }
-.btn-small i, .uiIcon i {
+.btn-small i, .stc i {
   font-size: 1.2rem;
 }
 
@@ -5026,7 +5026,7 @@ body.keyboard-focused .dropdown-content li:focus {
   width: 100%;
   text-align: right;
 }
-.modal .modal-footer .btn, .modal .modal-footer .btn-large, .modal .modal-footer .btn-small, .modal .modal-footer .uiIcon, .modal .modal-footer .btn-flat {
+.modal .modal-footer .btn, .modal .modal-footer .btn-large, .modal .modal-footer .btn-small, .modal .modal-footer .stc, .modal .modal-footer .btn-flat {
   margin: 6px 0;
 }
 
@@ -5679,7 +5679,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
   position: relative;
   height: 64px;
 }
@@ -5805,12 +5804,26 @@ h6.deckTitle {
 
 .uiIcon {
   background-color: #00000000;
+  margin: 2px;
 }
 .uiIcon:hover {
   background-color: #0000001e;
 }
 .uiIcon img {
   margin: 4px;
+}
+
+.dyn {
+  font-size: 14px;
+  border-radius: 32px;
+  transition: all 0.4s;
+  line-height: 32px;
+  text-align: right;
+  display: flex;
+  justify-content: flex-start;
+}
+.dyn span {
+  padding-left: 8px;
 }
 
 .custom-file-input {
