@@ -39,7 +39,7 @@
             <a class="uiIcon waves-effect" id="castBtn" data-tooltip="Start broadcast">
               <img src="./assets/buttons/broadcast_off.svg">
             </a>
-            <a class="uiIcon waves-effect" id="clientBtn" data-tooltip="Receive broadcast">
+            <a class="uiIcon waves-effect" id="clientBtn" data-tooltip="Receive broadcast" disabled>
               <img src="./assets/buttons/receive.svg">
             </a>
             <a class="uiIcon waves-effect modal-trigger" id="settings" data-tooltip="Settings"
@@ -116,16 +116,14 @@
             <div class="row">
               <div style="display: flex">
                 <div style="width: 56px; display: inline-block">
-                  <a class="waves-effect dropdown-trigger" data-target='dropdown1' data-tooltip="Sort by" id="sort" style="height: 21px;">
+                  <a class="waves-effect dropdown-trigger" data-target='sortBy' data-tooltip="Sort by" id="sort"
+                    style="height: 21px;">
                     <img src="./assets/buttons/sort.svg" height="21">
                   </a>
-                  <ul id='dropdown1' class='dropdown-content'>
-                    <li>one</li>
-                    <li><a href="#!">two</a></li>
-                    <li class="divider" tabindex="-1"></li>
-                    <li><a href="#!">three</a></li>
-                    <li><a href="#!"><i class="material-icons">view_module</i>four</a></li>
-                    <li><a href="#!"><i class="material-icons">cloud</i>five</a></li>
+                  <ul id='sortBy' class='dropdown-content'>
+                    <li class="sortby"><a value="title">Name</a></li>
+                    <li class="sortby"><a value="artist">Artist</a></li>
+                    <li class="sortby"><a value="album">Album</a></li>
                   </ul>
                 </div>
                 <div style="width: calc(100% - 56px); display: inline-block;">

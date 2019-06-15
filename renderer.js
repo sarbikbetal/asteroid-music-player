@@ -32,7 +32,11 @@ var drawer = document.getElementById('drawer')
 ipcRenderer.on('songs', (e, songs) => {
     var path = require('path');
 
-    songView.innerHTML = '<div class="progress"><div class="indeterminate"></div></div><div class="container center-align"><h3>Hold on, we are adding your music</h3><h4>Parsing music metadata...</h4></div>';
+    if (songs.length) {
+        songView.innerHTML = '<div class="progress"><div class="indeterminate"></div></div><div class="container center-align"><h3>Hold on, we are adding your music</h3><h4>Parsing music metadata...</h4></div>';
+    } else {
+        songView.innerHTML = ' <div class="container center-align"><h3>Seems like we are not in the right path</h3><h4>Come on, add some Music Directory in settings</h4></div>'
+    }
 
     var dirs = new Set()
     songs.forEach((song) => { dirs.add(path.dirname(song)) })
@@ -193,22 +197,31 @@ function cacheSongs(add, remove) {
 }
 
 ///////////   Cast the received objects into Song object /////////////// 
-var i = 0;
-const populate = () => {
+const populate = (param) => {
 
     let songDB = JSON.parse(localStorage.getItem('songObjs'))
 
-    songView.innerHTML = '<div class="progress"><div class="indeterminate"></div></div><div class="container center-align"><h3>Hold on, we are adding your music</h3><h4>Arranging your music library...</h4></div>';
+    if (songDB.length) {
+        songView.innerHTML = '<div class="progress"><div class="indeterminate"></div></div><div class="container center-align"><h3>Hold on, we are adding your music</h3><h4>Arranging your music library...</h4></div>';
+    }
+
     songDB.sort((a, b) => {
-        let s1 = a.title.toLowerCase(), s2 = b.title.toLowerCase()
+        if (param == 'artist') { var s1 = a.artist.toLowerCase(), s2 = b.artist.toLowerCase() }
+        else if (param == 'album') { var s1 = a.album.toLowerCase(), s2 = b.album.toLowerCase() }
+        else var s1 = a.title.toLowerCase(), s2 = b.title.toLowerCase()
+
         if (s1 < s2)
             return -1
         if (s1 > s2)
             return 1
         return 0
     })
+    if (songDB.length) {
+        songView.innerHTML = '';
+    }
 
-    songView.innerHTML = '';
+    var i = 0;
+
     songDB.forEach((song) => {
         song.listId = i++
         var base64 = "./assets/headphones.svg"
@@ -242,7 +255,13 @@ const populate = () => {
 }
 
 ////////////////   Song sorting function //////////////////////
-M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), {coverTrigger: false});
+M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), { coverTrigger: false });
+
+document.querySelectorAll('.sortby').forEach((type) => {
+    type.addEventListener('click', () => {
+        populate(type.firstElementChild.getAttribute('value'));
+    })
+})
 
 ////////////////   Volume control range slider   //////////////////////////
 
@@ -338,7 +357,7 @@ drawer.addEventListener('click', () => {
         document.documentElement.style.setProperty('--right-pos', '0px');
         document.documentElement.style.setProperty('--drawer', '-180deg');
     } else {
-        document.documentElement.style.setProperty('--mid-width', 'calc(100vw - 250px)');
+        document.documentElement.style.setProperty('--mid-width', 'calc(100vwte id.  - 250px)');
         document.documentElement.style.setProperty('--right-pos', '-180px');
         document.documentElement.style.setProperty('--drawer', '0deg');
     }
@@ -403,11 +422,11 @@ function playNow(song) {
             nowHowling.play();
         },
         onplay: function () {
-            playPause.firstChild.setAttribute('src', './assets/buttons/pause.svg')
+            playPause.firstElementChild.setAttribute('src', './assets/buttons/pause.svg')
             timer = setInterval(playProgress, 400)
         },
         onpause: function () {
-            playPause.firstChild.setAttribute('src', './assets/buttons/play_arrow.svg')
+            playPause.firstElementChild.setAttribute('src', './assets/buttons/play_arrow.svg')
             clearInterval(timer)
         },
         onplayerror: function () {
@@ -529,8 +548,9 @@ function broadcast() {
 
 
     console.log('Broadcasting on ' + ip.address() + ':2000');
+    M.toast({ html: `<span>Broadcasting on ${ip.address()}:2000</span>`, classes: 'rounded center-align' });
     castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast.svg');
-    castBtn.setAttribute('data-tooltip', "Stop broadcast");
+    castBtn.setAttribute('data-tooltip', `${ip.address()}:2000 | Stop broadcast`);
     castBtn.removeEventListener('click', broadcast);
     castBtn.addEventListener('click', stopCast);
 

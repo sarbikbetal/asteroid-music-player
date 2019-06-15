@@ -4834,7 +4834,6 @@ button.btn-floating, button.uiIcon {
   clear: both;
   color: rgba(0, 0, 0, 0.87);
   cursor: pointer;
-  min-height: 50px;
   line-height: 1.5rem;
   width: 100%;
   text-align: left;
@@ -4854,7 +4853,7 @@ button.btn-floating, button.uiIcon {
   color: #26a69a;
   display: block;
   line-height: 22px;
-  padding: 14px 16px;
+  padding: 7px 16px;
 }
 .dropdown-content li > span > label {
   top: 1px;
