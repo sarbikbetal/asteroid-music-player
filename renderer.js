@@ -9,6 +9,8 @@ console.log("This is the mainview renderer process");
 console.log(`${process.type}:${process.pid}`);
 console.log(process.versions);
 
+ipcRenderer.send('config');
+
 var nowHowling = null // This is a howl object
 var nowPlaying = null// This is my custom song object
 var fullList = []
@@ -32,6 +34,9 @@ var drawer = document.getElementById('drawer')
 
 ipcRenderer.on('populate', () => {
     populate();
+})
+ipcRenderer.on('status', (ev, stat) => {
+    songView.innerHTML = stat;
 })
 
 ///////////   Cast the received objects into Song object /////////////// 
@@ -57,22 +62,17 @@ const populate = (param) => {
     })
     if (songDB.length) {
         songView.innerHTML = '';
+    } else {
+        songView.innerHTML = '<div class="container center-align"><h3>Seems like we are not in the right path</h3><h4>Come on, add some Music Directory in settings</h4></div>'
     }
-
     var i = 0;
 
     songDB.forEach((song) => {
         song.listId = i++
-        // var base64 = "./assets/headphones.svg"
-        // if (songObj.img) {
-        //     base64 = "data:image/jpeg;base64," + window.btoa(songObj.img);
-        // } else {
-        //     base64 = "./assets/headphones.svg"
-        // }
         var newNode = makeTemplate(`
             <div class="card horizontal waves-effect">
             <div class="card-image">
-                <img src="${song.img||"./assets/headphones.svg"}">
+                <img src="${song.img || "./assets/headphones.svg"}">
             </div>
             <div class="card-stacked">
                 <div class="card-content">
@@ -103,14 +103,14 @@ const populate = (param) => {
     });
     fullList = bareSongs;
 
-    
-    let _lsTotal = 0, _xLen, _x; for (_x in localStorage) {
-        if (!localStorage.hasOwnProperty(_x)) { continue; }
-        _xLen = ((localStorage[_x].length + _x.length) * 2);
-        _lsTotal += _xLen;
-        console.log(_x.substr(0, 50) + " = " + (_xLen / 1024).toFixed(2) + " KB")
-    };
-    console.log("Total = " + (_lsTotal / 1024).toFixed(2) + " KB");
+
+    // let _lsTotal = 0, _xLen, _x; for (_x in localStorage) {
+    //     if (!localStorage.hasOwnProperty(_x)) { continue; }
+    //     _xLen = ((localStorage[_x].length + _x.length) * 2);
+    //     _lsTotal += _xLen;
+    //     console.log(_x.substr(0, 50) + " = " + (_xLen / 1024).toFixed(2) + " KB")
+    // };
+    // console.log("Total = " + (_lsTotal / 1024).toFixed(2) + " KB");
 
 }
 
@@ -196,7 +196,7 @@ seekBar.addEventListener('change', () => {
     nowHowling.seek(position);
     timer = setInterval(playProgress, 400)
 })
-seekBar.addEventListener('mousedown', (e) => {
+seekBar.parentNode.addEventListener('mousedown', (e) => {
     clearInterval(timer);
 })
 

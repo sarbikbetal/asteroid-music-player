@@ -37,7 +37,7 @@ app.on('ready', () => {
     minWidth: 850,
     webPreferences: {
       nodeIntegration: true,
-      devTools: true
+      devTools: false
     }
   })
 
@@ -68,27 +68,16 @@ app.on('ready', () => {
     mainWindow.loadFile('./client/client.html')
   })
 
-  let workerWindow = new BrowserWindow({
-    minHeight: 600,
-    minWidth: 850,
-    webPreferences: {
-      nodeIntegration: true,
-      devTools: false
-    }
-  })
-  workerWindow.loadFile('./worker/worker.html')
-
-  workerWindow.webContents.on('did-finish-load', () => {
-    workerWindow.webContents.send('songs', loadFiles());
-  })
-
-  ipcMain.on('populate',()=>{
-mainWindow.webContents.send('populate');
+  ipcMain.on('populate', () => {
+    mainWindow.webContents.send('populate');
   })
 
   ipcMain.on('config', () => {
-    workerWindow.webContents.send('songs', loadFiles());
-    console.log("objects sent");
+    startCacher()
+  })
+
+  ipcMain.on('status', (ev,stat) => {
+    mainWindow.webContents.send('status',stat);
   })
 })
 
@@ -105,9 +94,23 @@ app.on('activate', function () {
   if (mainWindow === null) createWindow()
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+/////////////////////    Start the cacher renderer process ////////////////////
+function startCacher() {
+  let workerWindow = new BrowserWindow({
+    show:false,
+    webPreferences: {
+      nodeIntegration: true,
+      devTools: false,
+    }
+  })
+  workerWindow.loadFile('./worker/worker.html')
 
+  workerWindow.webContents.on('did-finish-load', () => {
+    workerWindow.webContents.send('songs', loadFiles());
+  })
+
+  return workerWindow;
+}
 
 // Traverses the given directory and searches for mp3 files and returs a song object
 
