@@ -63,7 +63,7 @@ const populate = (param) => {
 
     songDB.forEach((song) => {
         song.listId = i++
-        var base64 = "./assets/headphones.svg"
+        // var base64 = "./assets/headphones.svg"
         // if (songObj.img) {
         //     base64 = "data:image/jpeg;base64," + window.btoa(songObj.img);
         // } else {
@@ -72,7 +72,7 @@ const populate = (param) => {
         var newNode = makeTemplate(`
             <div class="card horizontal waves-effect">
             <div class="card-image">
-                <img src="${base64}">
+                <img src="${song.img||"./assets/headphones.svg"}">
             </div>
             <div class="card-stacked">
                 <div class="card-content">

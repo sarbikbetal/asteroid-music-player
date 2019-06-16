@@ -1,12 +1,9 @@
 const { ipcRenderer, remote } = require('electron');
 const fs = require('fs');
 const jsmediatags = require('jsmediatags');
+const imageCompression = require('browser-image-compression');
 
 console.log(`${process.type}:${process.pid}`);
-
-document.getElementById('close').addEventListener('click', () => {
-    remote.getCurrentWindow().close();
-})
 
 
 /////////////////////// Receives all the songs from Main Process  ///////////////////////////
@@ -138,37 +135,40 @@ function cacheSongs(add, remove) {
         syncforeach(add, (next, song, index, array) => {
             jsmediatags.read(song, {
                 onSuccess: (tag) => {
-                    // var image = tag.tags.picture;
-                    var smallImg = null;
-                    // if (image) {
-                    //     var base64String = "";
-                    //     for (var i = 0; i < image.data.length; i++) {
-                    //         base64String += String.fromCharCode(image.data[i]);
-                    //     }
+                    var image = tag.tags.picture;
+                    var smallImg;
+                    if (image) {
+                        var base64String = "";
+                        for (var i = 0; i < image.data.length; i++) {
+                            base64String += String.fromCharCode(image.data[i]);
+                        }
 
-                    //     smallImg = "data:image/jpeg;base64," + window.btoa(base64String);
-                    //     imageCompression.getFilefromDataUrl(smallImg).then((file) => {
-                    //         imageCompression(file,{maxSizeMB:0.002,maxWidthOrHeight:48}).then((file)=>{
-                    //             imageCompression.getDataUrlFromFile(file).then((string)=>{
-                    //                 smallImg = string;
-                    //             })
-                    //         })
-                    //     })
-                    // } else {
-                    //     smallImg = null
-                    // }
+                        smallImg = "data:image/jpeg;base64," + window.btoa(base64String);
+                        imageCompression.getFilefromDataUrl(smallImg).then((file) => {
+                            imageCompression(file, { maxSizeMB: 0.0018, maxWidthOrHeight: 48 }).then((file) => {
+                                imageCompression.getDataUrlFromFile(file).then((string) => {
+                                    smallImg = string;
+                                    tagit();
+                                })
+                            })
+                        })
+                    } else {
+                        smallImg = null
+                        tagit();
+                    }
 
-                    var sound = new Song({
-                        filename: path.basename(song),
-                        title: tag.tags.title,
-                        url: song,
-                        artist: tag.tags.artist,
-                        album: tag.tags.album,
-                        img: smallImg
-                    });
-                    // populate(sound);
-                    modified.push(sound);
-                    next();
+                    function tagit() {
+                        var sound = new Song({
+                            filename: path.basename(song),
+                            title: tag.tags.title,
+                            url: song,
+                            artist: tag.tags.artist,
+                            album: tag.tags.album,
+                            img: smallImg
+                        });
+                        modified.push(sound);
+                        next();
+                    }
                 },
                 onError: (error) => {
                     console.error(':(', error.type, error.info, song);
@@ -185,6 +185,7 @@ function cacheSongs(add, remove) {
             console.log("Metadata Parsing Completed");
             localStorage.setItem('songObjs', JSON.stringify(modified));
             ipcRenderer.send('populate');
+            // remote.getCurrentWindow().close();
         });
     })
 }

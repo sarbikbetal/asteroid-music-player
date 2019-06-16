@@ -73,7 +73,7 @@ app.on('ready', () => {
     minWidth: 850,
     webPreferences: {
       nodeIntegration: true,
-      devTools: true
+      devTools: false
     }
   })
   workerWindow.loadFile('./worker/worker.html')
