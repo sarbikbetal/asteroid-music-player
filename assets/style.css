@@ -5705,6 +5705,7 @@ body {
 
 .Left {
   width: 240px;
+  min-width: 240px;
 }
 .Left::-webkit-scrollbar {
   display: none;

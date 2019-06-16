@@ -28,7 +28,7 @@ socket.on('sync', (data) => {
 
 function loadSong() {
     sound = new Howl({
-        src: 'http://localhost:2000',
+        src: 'http://localhost:2416',
         format: 'mp3',
         html5: true,
         onloaderror: function (id, err) {

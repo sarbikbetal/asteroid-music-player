@@ -36,7 +36,8 @@ app.on('ready', () => {
     minHeight: 600,
     minWidth: 850,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      devTools: true
     }
   })
 
@@ -60,18 +61,33 @@ app.on('ready', () => {
   })
 
   // Sends the song object array to renderer process
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send('songs', loadFiles());
-    console.log("objects sent");
-  })
 
   // Respond tio IPCmsg to load client page
   ipcMain.on('loadClient', () => {
     console.log("Loading client page");
     mainWindow.loadFile('./client/client.html')
   })
+
+  let workerWindow = new BrowserWindow({
+    minHeight: 600,
+    minWidth: 850,
+    webPreferences: {
+      nodeIntegration: true,
+      devTools: true
+    }
+  })
+  workerWindow.loadFile('./worker/worker.html')
+
+  workerWindow.webContents.on('did-finish-load', () => {
+    workerWindow.webContents.send('songs', loadFiles());
+  })
+
+  ipcMain.on('populate',()=>{
+mainWindow.webContents.send('populate');
+  })
+
   ipcMain.on('config', () => {
-    mainWindow.webContents.send('songs', loadFiles());
+    workerWindow.webContents.send('songs', loadFiles());
     console.log("objects sent");
   })
 })

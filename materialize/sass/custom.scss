@@ -62,6 +62,7 @@ body {
 
 .Left {
     width: 240px;
+    min-width: 240px;
 
     &::-webkit-scrollbar {
         display: none;
@@ -201,7 +202,8 @@ h6.deckTitle {
     text-align: right;
     display: flex;
     justify-content: flex-start;
-    span{
+
+    span {
         padding-left: 8px;
     }
 }

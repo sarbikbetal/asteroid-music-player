@@ -1,11 +1,13 @@
+const fs = require('fs');
+const { Worker } = require("worker_threads");
 const { ipcRenderer } = require('electron');
 const { Howl, Howler } = require('howler');
 const StickyEvents = require('sticky-events').default;
 const jsmediatags = require('jsmediatags');
-const fs = require('fs');
 
 console.log("This is the mainview renderer process");
 console.log(`${process.type}:${process.pid}`);
+console.log(process.versions);
 
 var nowHowling = null // This is a howl object
 var nowPlaying = null// This is my custom song object
@@ -28,178 +30,15 @@ var castBtn = document.getElementById('castBtn')
 var drawer = document.getElementById('drawer')
 
 
-/////////////////////// Receives all the songs from Main Process  ///////////////////////////
-ipcRenderer.on('songs', (e, songs) => {
-    var path = require('path');
-
-    if (songs.length) {
-        songView.innerHTML = '<div class="progress"><div class="indeterminate"></div></div><div class="container center-align"><h3>Hold on, we are adding your music</h3><h4>Parsing music metadata...</h4></div>';
-    } else {
-        songView.innerHTML = ' <div class="container center-align"><h3>Seems like we are not in the right path</h3><h4>Come on, add some Music Directory in settings</h4></div>'
-    }
-
-    var dirs = new Set()
-    songs.forEach((song) => { dirs.add(path.dirname(song)) })
-    dirs = Array.from(dirs)
-
-    let added = [];
-    let deleted = [];
-    let existing = JSON.parse(localStorage.getItem('urls')) || [];
-    let modified = [];
-
-    songs.forEach((song) => {
-        if (!existing.includes(song)) {
-            added.push(song)
-        }
-    })
-
-    window.syncforeach(existing, (next, url, index, arr) => {
-        if (index < arr.length) {
-            fs.access(url, fs.F_OK, (err) => {
-                if (err || !dirs.includes(path.dirname(url))) {
-                    deleted.push(existing[index])
-                    next()
-                } else {
-                    modified.push(existing[index])
-                    next()
-                }
-            })
-        }
-    }).done(() => {
-        console.log("File URLs Checked");
-        modified = modified.concat(added);
-        localStorage.setItem('urls', JSON.stringify(modified));
-        cacheSongs(added, deleted);
-    })
-
-
-
-    // let request = indexedDB.open('library', 1),
-    //     db,
-    //     tx,
-    //     store
-
-    // request.onerror = (e) => { console.log(e.target.errorCode); }
-
-    // request.onsuccess = (e) => {
-    //     db = request.result;
-
-    //     db.onerror = (e) => {
-    //         console.log("Error:" + e.target.errorCode);
-    //     }
-
-    // songs.forEach((song) => {
-    //     jsmediatags.read(song, {
-    //         onSuccess: (tag) => {
-    //             var image = tag.tags.picture;
-    //             var smallImg;
-    //             if (image) {
-    //                 var base64String = "";
-    //                 for (var i = 0; i < image.data.length; i++) {
-    //                     base64String += String.fromCharCode(image.data[i]);
-    //                 }
-    //                 smallImg = base64String
-    //             } else {
-    //                 smallImg = null
-    //             }
-    //             var sound = new Song({
-    //                 filename: path.basename(song),
-    //                 title: tag.tags.title,
-    //                 url: song,
-    //                 artist: tag.tags.artist,
-    //                 album: tag.tags.album,
-    //                 img: smallImg
-    //             });
-    //             populate(sound);
-
-    //             // tx = db.transaction("songs", "readwrite");
-    //             // store = tx.objectStore("songs");
-    //             // store.add(sound);
-    //         },
-    //         onError: (error) => {
-    //             console.error(':(', error.type, error.info, song);
-    //             var sound = new Song({
-    //                 filename: path.basename(song),
-    //                 url: song
-    //             });
-    //             populate(sound);
-    //             // tx = db.transaction("songs", "readwrite");
-    //             // store = tx.objectStore("songs");
-    //             // store.add(sound);
-    //         }
-    //     });
-    // });
-
-    // }
-
-    // request.onupgradeneeded = (e) => {
-    //     let db = request.result,
-    //         store = db.createObjectStore('songs', { keyPath: 'url' })
-    // }
+ipcRenderer.on('populate', () => {
+    populate();
 })
-
-function cacheSongs(add, remove) {
-    var path = require('path');
-
-    let songDB = JSON.parse(localStorage.getItem('songObjs')) || [];
-    let modified = [];
-
-    syncforeach(songDB, (next, song, index, array) => {
-        if (!remove.includes(song.url)) {
-            modified.push(song)
-        }
-        next()
-    }).done(() => {
-        syncforeach(add, (next, song, index, array) => {
-            jsmediatags.read(song, {
-                onSuccess: (tag) => {
-                    // var image = tag.tags.picture;
-                    var smallImg;
-                    // if (image) {
-                    //     var base64String = "";
-                    //     for (var i = 0; i < image.data.length; i++) {
-                    //         base64String += String.fromCharCode(image.data[i]);
-                    //     }
-                    //     smallImg = base64String
-                    // } else {
-                    //     smallImg = null
-                    // }
-                    var sound = new Song({
-                        filename: path.basename(song),
-                        title: tag.tags.title,
-                        url: song,
-                        artist: tag.tags.artist,
-                        album: tag.tags.album,
-                        img: smallImg
-                    });
-                    // populate(sound);
-                    modified.push(sound);
-                    next();
-                },
-                onError: (error) => {
-                    console.error(':(', error.type, error.info, song);
-                    var sound = new Song({
-                        filename: path.basename(song),
-                        url: song
-                    });
-                    // populate(sound);
-                    modified.push(sound)
-                    next();
-                }
-            });
-        }).done(() => {
-            console.log("Metadata Parsing Completed");
-            fullList = modified
-            localStorage.setItem('songObjs', JSON.stringify(modified));
-            populate();
-        });
-    })
-}
 
 ///////////   Cast the received objects into Song object /////////////// 
 const populate = (param) => {
 
     let songDB = JSON.parse(localStorage.getItem('songObjs'))
+
 
     if (songDB.length) {
         songView.innerHTML = '<div class="progress"><div class="indeterminate"></div></div><div class="container center-align"><h3>Hold on, we are adding your music</h3><h4>Arranging your music library...</h4></div>';
@@ -252,6 +91,27 @@ const populate = (param) => {
         songView.appendChild(newNode);
     })
     localStorage.setItem('songObjs', JSON.stringify(songDB))
+    let bareSongs = []
+    songDB.forEach((song) => {
+        let baresong = new Object({
+            url: song.url,
+            title: song.title,
+            artist: song.artist,
+            listId: song.listId,
+        })
+        bareSongs.push(baresong)
+    });
+    fullList = bareSongs;
+
+    
+    let _lsTotal = 0, _xLen, _x; for (_x in localStorage) {
+        if (!localStorage.hasOwnProperty(_x)) { continue; }
+        _xLen = ((localStorage[_x].length + _x.length) * 2);
+        _lsTotal += _xLen;
+        console.log(_x.substr(0, 50) + " = " + (_xLen / 1024).toFixed(2) + " KB")
+    };
+    console.log("Total = " + (_lsTotal / 1024).toFixed(2) + " KB");
+
 }
 
 ////////////////   Song sorting function //////////////////////
@@ -529,7 +389,7 @@ function broadcast() {
                 fs.createReadStream(filePath).pipe(res);
             }
         }
-    }).listen(2000);
+    }).listen(2416);
 
     ///////////////// Socket.io server ////////////////////////////
     var clients = []
@@ -547,11 +407,11 @@ function broadcast() {
     });
 
 
-    console.log('Broadcasting on ' + ip.address() + ':2000');
+    console.log('Broadcasting on ' + ip.address() + ':2416');
     castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast.svg');
-    castBtn.style.setProperty('flex-grow',1);
-    castBtn.style.setProperty('background-color','#fff');
-    castBtn.appendChild(makeTemplate(`<span>${ip.address()}:2000</span>`))
+    castBtn.style.setProperty('flex-grow', 1);
+    castBtn.style.setProperty('background-color', '#fff');
+    castBtn.appendChild(makeTemplate(`<span>${ip.address()}:2416</span>`))
     castBtn.setAttribute('data-tooltip', `Stop broadcast`);
     castBtn.removeEventListener('click', broadcast);
     castBtn.addEventListener('click', stopCast);
@@ -565,15 +425,15 @@ function broadcast() {
         io.close()
         socketServer.close()
         server.close()
-      
+
         console.log("Servers stopped");
-      
+
         castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast_off.svg')
         castBtn.removeEventListener('click', stopCast);
         castBtn.addEventListener('click', broadcast);
         castBtn.setAttribute('data-tooltip', "Start broadcast")
-        castBtn.style.setProperty('flex-grow',0);
-        castBtn.style.setProperty('background-color','#00000000');
+        castBtn.style.setProperty('flex-grow', 0);
+        castBtn.style.setProperty('background-color', '#00000000');
         castBtn.querySelector('span').remove();
     }
 
