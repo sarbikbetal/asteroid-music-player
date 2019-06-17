@@ -399,7 +399,7 @@ function broadcast() {
         console.log('client connected');
         client.on('loaded', () => {
             var now = nowHowling.seek();
-            io.emit('sync', now)
+            io.emit('sync',{progress: now, time: Date.now()} )
             // time(now);
             console.log(`Song loaded by client and synced to ${now}`);
         })

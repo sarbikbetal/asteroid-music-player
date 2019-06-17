@@ -40,7 +40,8 @@ function connect() {
 
     socket.on('sync', (data) => {
         console.log(data);
-        sound.seek(data);
+        var time = data.progress + ((Date.now() - data.time) * 0.001)
+        sound.seek(time);
         sound.play();
     });
 
