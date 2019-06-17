@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { Worker } = require("worker_threads");
 const { ipcRenderer } = require('electron');
 const { Howl, Howler } = require('howler');
 const StickyEvents = require('sticky-events').default;
@@ -445,10 +444,11 @@ M.Tooltip.init(document.querySelectorAll('#sort'), { position: 'bottom', margin:
 
 //////////////////////////   Broadcast & Client button event listener ///////////////////////
 
+castBtn.addEventListener('click', broadcast)
+
 clientBtn.addEventListener('click', () => {
     ipcRenderer.send('loadClient');
 })
-castBtn.addEventListener('click', broadcast)
 
 /////////////////////////    Settings button       /////////////////////////////////
 

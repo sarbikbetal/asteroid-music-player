@@ -250,3 +250,15 @@ h6.deckTitle {
         }
     }
 }
+
+/////////////////////  Client Page  ///////////////////////
+input#ip {
+    border-color: transparent;
+    display: inline;
+    overflow: hidden;
+    flex-grow: 1;
+    &:focus {
+        border-color: transparent;
+        outline-color: #ffffffcb;
+    }
+}

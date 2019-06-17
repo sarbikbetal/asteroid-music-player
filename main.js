@@ -2,6 +2,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const state = require('electron-window-state');
 const fs = require('fs');
+const path = require('path');
 // const syncforeach = require('sync-foreach')
 
 
@@ -12,6 +13,7 @@ const fs = require('fs');
 // const { openProcessManager } = require('electron-process-manager');
 // require('electron-reload')(__dirname)
 console.log(`${process.type}:${process.pid}`);
+console.log(process.resourcesPath);
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -35,9 +37,10 @@ app.on('ready', () => {
     y: winState.y,
     minHeight: 600,
     minWidth: 850,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
-      devTools: false
+      devTools: true
     }
   })
 
@@ -52,6 +55,11 @@ app.on('ready', () => {
   ///////////// Open the DevTools.///////////
   // mainWindow.webContents.openDevTools()
 
+  ///////// Show the window ///////////
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show()
+  })
+
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
@@ -60,24 +68,28 @@ app.on('ready', () => {
     mainWindow = null
   })
 
-  // Sends the song object array to renderer process
 
-  // Respond tio IPCmsg to load client page
+  ////////////////////////// Respond to IPC messages ///////////////////////////
+  ipcMain.on('loadHost', () => {
+    console.log("Loading main page");
+    mainWindow.loadFile('./index.html')
+  })
+
+
   ipcMain.on('loadClient', () => {
     console.log("Loading client page");
     mainWindow.loadFile('./client/client.html')
-  })
-
-  ipcMain.on('populate', () => {
-    mainWindow.webContents.send('populate');
   })
 
   ipcMain.on('config', () => {
     startCacher()
   })
 
-  ipcMain.on('status', (ev,stat) => {
-    mainWindow.webContents.send('status',stat);
+  ipcMain.on('populate', () => {
+    mainWindow.webContents.send('populate');
+  })
+  ipcMain.on('status', (ev, stat) => {
+    mainWindow.webContents.send('status', stat);
   })
 })
 
@@ -97,7 +109,7 @@ app.on('activate', function () {
 /////////////////////    Start the cacher renderer process ////////////////////
 function startCacher() {
   let workerWindow = new BrowserWindow({
-    show:false,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       devTools: false,
@@ -105,6 +117,7 @@ function startCacher() {
   })
   workerWindow.loadFile('./worker/worker.html')
 
+  // Sends the song object array to renderer process
   workerWindow.webContents.on('did-finish-load', () => {
     workerWindow.webContents.send('songs', loadFiles());
   })
@@ -115,8 +128,6 @@ function startCacher() {
 // Traverses the given directory and searches for mp3 files and returs a song object
 
 var walkSync = function (dir, filelist) {
-  var path = path || require('path');
-  var fs = fs || require('fs'),
     files = fs.readdirSync(dir);
   filelist = filelist || [];
   files.forEach(function (file) {
@@ -136,7 +147,7 @@ var walkSync = function (dir, filelist) {
 
 function loadFiles() {
   var urls = [];
-  var json = fs.readFileSync('./assets/config.json')
+  var json = fs.readFileSync(path.join(__dirname,'/assets/config.json'))
   json = JSON.parse(json);
   json.directories.forEach((dir) => {
     var batch = walkSync(dir);

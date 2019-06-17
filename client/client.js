@@ -1,42 +1,80 @@
+const { ipcRenderer } = require('electron')
 const { Howl, Howler } = require('howler');
 const io = require('socket.io-client')
 
 console.log("This is the client renderer process");
 console.log(`${process.type}:${process.pid}`);
 
+var socket;
 
-var sound;
-var socket = io('http://localhost:2415');
+document.getElementById('check').addEventListener('click', connect)
 
-socket.on('connect', () => {
-    loadSong()
-    console.log(`connected to socket io server`);
-});
+function connect() {
+    var ip = document.getElementById('ip').value;
+    var sound;//Howler sound
 
-socket.on('disconnect',()=>{
-    if(sound){
-        sound.stop()
-    }
-    console.log("Disconnected from server");
-})
+    socket = io(`http://${ip}:2415`);
 
-socket.on('sync', (data) => {
-    console.log(data);
-    sound.seek(data);
-    sound.play();
-});
+    socket.on('connect_error', (error) => {
+        console.log(error);
 
-function loadSong() {
-    sound = new Howl({
-        src: 'http://localhost:2416',
-        format: 'mp3',
-        html5: true,
-        onloaderror: function (id, err) {
-            console.log(err);
-        },
-        onload: function () {
-            console.log('Song loaded from localhost');
-            socket.emit('loaded');
-        }
+        // M.toast({ html: `<span>${error}</span>`, classes: 'rounded center-align' });
     });
+    socket.on('error', (error) => {
+        console.log(error);
+        // M.toast({ html: `<span>${error}</span>`, classes: 'rounded center-align' });
+    });
+
+    socket.on('connect', () => {
+        sound = loadSong();
+        console.log(`connected to socket io server`);
+    });
+
+    socket.on('disconnect', () => {
+        if (sound) {
+            sound.stop()
+        }
+        console.log("Disconnected from server");
+        disconnect();
+    })
+
+    socket.on('sync', (data) => {
+        console.log(data);
+        sound.seek(data);
+        sound.play();
+    });
+
+    function loadSong() {
+        Howler.unload();
+        var sound = new Howl({
+            src: 'http://localhost:2416',
+            format: 'mp3',
+            html5: true,
+            onloaderror: function (id, err) {
+                console.log(err);
+            },
+            onload: function () {
+                console.log('Song loaded from localhost');
+                socket.emit('loaded');
+            }
+        });
+        return sound;
+    }
+    document.getElementById('check').setAttribute('src', '../assets/buttons/close.svg');
+    document.getElementById('check').removeEventListener('click', connect);
+    document.getElementById('check').addEventListener('click', disconnect);
 }
+
+function disconnect() {
+    Howler.unload();
+    socket.close();
+    document.getElementById('check').setAttribute('src', '../assets/buttons/check.svg');
+    document.getElementById('check').removeEventListener('click', disconnect);
+    document.getElementById('check').addEventListener('click', connect);
+}
+
+///////////////////////////    Button action event listeners    /////////////////////////////
+document.getElementById('homeBtn').addEventListener('click', () => {
+    ipcRenderer.send('loadHost');
+})
+M.Tooltip.init(document.querySelectorAll('.uiIcon'), { position: 'bottom', margin: 2, transitionMovement: 8, exitDelay: 50 })

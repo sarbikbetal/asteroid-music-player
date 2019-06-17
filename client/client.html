@@ -10,31 +10,28 @@
 
 <body>
 
-
-    <div class="Top">
-        <div style="width:100%">
-            <div class="row">
-                <div class="col s10"></div>
-                <div class="col s1">
-                    <a class="button waves-effect media-control" id="broadcast">
-                        <img src="../assets/buttons/broadcast.svg">
-                    </a>
-                </div>
-                <div class="col s1">
-                    <a class="button waves-effect media-control" id="clientBtn">
-                        <img src="../assets/buttons/receive.svg">
-                    </a>
-                </div>
+    <div class=" Top">
+        <div class="row" style="width:100%; margin:0">
+            <div class="col s8">
+            </div>
+            <div class="col s4" style="display:flex;justify-content: flex-end;">
+                <a class="uiIcon dyn waves-effect" style="flex-grow: 1;background-color: #fff;"
+                    data-tooltip="Server IP">
+                    <img src="../assets/buttons/receive.svg">
+                    <input id="ip" placeholder="Server IP">
+                    <img id="check" src="../assets/buttons/check.svg">
+                </a>
+                <a class="uiIcon stc waves-effect" id="homeBtn" data-tooltip="Home">
+                    <img src="../assets/buttons/home.svg">
+                </a>
             </div>
         </div>
     </div>
 
-
     <script>
-        // You can also require other files to run in this process
+        require('../assets/materialize.min.js')
         require('./client.js')
     </script>
-    <script src="../assets/materialize.min.js"></script>
 </body>
 
 </html>

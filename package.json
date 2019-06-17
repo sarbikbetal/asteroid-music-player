@@ -16,7 +16,8 @@
     "files": {
       "filter": [
         "!**/materialize",
-        "!**/search"
+        "!**/search",
+        "!installer"
       ]
     }
   },

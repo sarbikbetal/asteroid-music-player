@@ -5856,3 +5856,14 @@ h6.deckTitle {
 #selectedDirs a:hover img {
   background-color: orangered;
 }
+
+input#ip {
+  border-color: transparent;
+  display: inline;
+  overflow: hidden;
+  flex-grow: 1;
+}
+input#ip:focus {
+  border-color: transparent;
+  outline-color: #ffffffcb;
+}
