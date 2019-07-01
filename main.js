@@ -13,7 +13,6 @@ const path = require('path');
 // const { openProcessManager } = require('electron-process-manager');
 // require('electron-reload')(__dirname)
 console.log(`${process.type}:${process.pid}`);
-console.log(process.resourcesPath);
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -82,6 +81,7 @@ app.on('ready', () => {
   })
 
   ipcMain.on('config', () => {
+    mainWindow.webContents.send('configpath', app.getPath('userData'));
     startCacher()
   })
 
@@ -128,7 +128,7 @@ function startCacher() {
 // Traverses the given directory and searches for mp3 files and returs a song object
 
 var walkSync = function (dir, filelist) {
-    files = fs.readdirSync(dir);
+  files = fs.readdirSync(dir);
   filelist = filelist || [];
   files.forEach(function (file) {
     if (fs.statSync(path.join(dir, file)).isDirectory()) {
@@ -147,7 +147,14 @@ var walkSync = function (dir, filelist) {
 
 function loadFiles() {
   var urls = [];
-  var json = fs.readFileSync(path.join(__dirname,'/assets/config.json'))
+  var json;
+
+  if (!fs.existsSync(path.join(app.getPath('userData'), "/config.json"))) {
+    console.log("File not found");
+    json = new Object({ directories: [] });
+    fs.writeFileSync(path.join(app.getPath('userData'), "/config.json"), JSON.stringify(json));
+  }
+  json = fs.readFileSync(path.join(app.getPath('userData'), "/config.json"))
   json = JSON.parse(json);
   json.directories.forEach((dir) => {
     var batch = walkSync(dir);

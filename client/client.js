@@ -11,7 +11,7 @@ document.getElementById('check').addEventListener('click', connect)
 
 function connect() {
     var ip = document.getElementById('ip').value;
-    var sound;//Howler sound
+    var sound = null;//Howler sound
 
     socket = io(`http://${ip}:2415`);
 
@@ -45,10 +45,18 @@ function connect() {
         sound.play();
     });
 
+
+    socket.on('change', () => {
+        console.log('song changed');
+        sound = null;
+        sound = loadSong();
+    })
+
     function loadSong() {
         Howler.unload();
+        if (sound) sound.unload()
         var sound = new Howl({
-            src: 'http://localhost:2416',
+            src: `http://${ip}:2416`,
             format: 'mp3',
             html5: true,
             onloaderror: function (id, err) {
@@ -59,6 +67,8 @@ function connect() {
                 socket.emit('loaded');
             }
         });
+        console.log(sound);
+
         return sound;
     }
     document.getElementById('check').setAttribute('src', '../assets/buttons/close.svg');

@@ -3,18 +3,24 @@ const { ipcRenderer } = require('electron');
 const { Howl, Howler } = require('howler');
 const StickyEvents = require('sticky-events').default;
 const jsmediatags = require('jsmediatags');
-
+const searchico = require('searchico');
 console.log("This is the mainview renderer process");
 console.log(`${process.type}:${process.pid}`);
 console.log(process.versions);
 
 ipcRenderer.send('config');
 
+var configpath;
+ipcRenderer.once('configpath', (ev, cpath) => {
+    const path = require('path');
+    configpath = path.join(cpath, "/config.json");
+})
+
 var nowHowling = null // This is a howl object
 var nowPlaying = null// This is my custom song object
 var fullList = []
 var timer
-
+var songBase // Searchico object
 // Important DOM nodes
 var songView = document.getElementById('allSongs');
 var playPause = document.getElementById('playPause');
@@ -101,7 +107,7 @@ const populate = (param) => {
         bareSongs.push(baresong)
     });
     fullList = bareSongs;
-
+    songBase = searchico(bareSongs);
 
     // let _lsTotal = 0, _xLen, _x; for (_x in localStorage) {
     //     if (!localStorage.hasOwnProperty(_x)) { continue; }
@@ -122,6 +128,23 @@ document.querySelectorAll('.sortby').forEach((type) => {
     })
 })
 
+///////////////////////   Search Bar  ////////////////////////
+
+document.getElementById('search').addEventListener('focus', ((e) => {
+    e.target.parentElement.setAttribute('class', 'z-depth-2 uiIcon dyn');
+}))
+document.getElementById('search').addEventListener('blur', ((e) => {
+    e.target.parentElement.setAttribute('class', 'uiIcon dyn');
+}))
+document.getElementById('search').addEventListener('keyup', (e) => {
+    if (e.key != 'Enter' || e.key == 'Backspace') {
+        let result = songBase.find(e.target.value);
+        console.log(e.target.value, result);
+    }
+    else {
+        e.target.blur();
+    }
+})
 ////////////////   Volume control range slider   //////////////////////////
 
 if (!localStorage.volume) {
@@ -399,7 +422,7 @@ function broadcast() {
         console.log('client connected');
         client.on('loaded', () => {
             var now = nowHowling.seek();
-            io.emit('sync',{progress: now, time: Date.now()} )
+            io.emit('sync', { progress: now, time: Date.now() })
             // time(now);
             console.log(`Song loaded by client and synced to ${now}`);
         })
@@ -410,8 +433,9 @@ function broadcast() {
     castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast.svg');
     castBtn.style.setProperty('flex-grow', 1);
     castBtn.style.setProperty('background-color', '#fff');
-    castBtn.appendChild(makeTemplate(`<span>${ip.address()}:2416</span>`))
+    castBtn.appendChild(makeTemplate(`<span>${ip.address()}</span>`))
     castBtn.setAttribute('data-tooltip', `Stop broadcast`);
+    castBtn.setAttribute('class', 'z-depth-2 uiIcon dyn')
     castBtn.removeEventListener('click', broadcast);
     castBtn.addEventListener('click', stopCast);
 
@@ -430,6 +454,7 @@ function broadcast() {
         castBtn.firstElementChild.setAttribute('src', './assets/buttons/broadcast_off.svg')
         castBtn.removeEventListener('click', stopCast);
         castBtn.addEventListener('click', broadcast);
+        castBtn.setAttribute('class', 'uiIcon dyn')
         castBtn.setAttribute('data-tooltip', "Start broadcast")
         castBtn.style.setProperty('flex-grow', 0);
         castBtn.style.setProperty('background-color', '#00000000');
@@ -478,7 +503,7 @@ function selectFolder(e) {
 };
 
 document.getElementById('settings').addEventListener('click', () => {
-    fs.readFile('./assets/config.json', (err, data) => {
+    fs.readFile(configpath, (err, data) => {
         if (err) throw err;
         document.querySelectorAll('.dirs').forEach((node) => {
             node.remove();
@@ -496,7 +521,7 @@ function saveSettings() {
     var dirs = new Set()
     json.directories.forEach((dir) => { dirs.add(dir) })
     json.directories = Array.from(dirs)
-    fs.writeFile('./assets/config.json', JSON.stringify(json), (err) => {
+    fs.writeFile(configpath, JSON.stringify(json), (err) => {
         if (err) throw err;
         ipcRenderer.send('config');
     });

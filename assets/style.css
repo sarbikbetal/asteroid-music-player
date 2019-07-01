@@ -2608,7 +2608,7 @@ a {
   clear: both;
 }
 
-.z-depth-0, .uiIcon {
+.z-depth-0, .stc {
   box-shadow: none !important;
 }
 
@@ -5761,11 +5761,15 @@ a.media-control:hover {
 }
 
 .list-heading {
+  border-radius: 50px;
   color: #00000081;
   position: sticky;
   top: -1px;
-  margin: 0;
+  margin: 2px 0 0 0;
   z-index: 4;
+}
+.list-heading div {
+  border-radius: 50px;
 }
 
 #nowPlayingImg {
@@ -5824,7 +5828,7 @@ h6.deckTitle {
   justify-content: flex-start;
 }
 .dyn span {
-  padding-left: 8px;
+  padding: 0 4px;
 }
 
 .custom-file-input {
@@ -5857,13 +5861,14 @@ h6.deckTitle {
   background-color: orangered;
 }
 
-input#ip {
+input.icn-in {
   border-color: transparent;
   display: inline;
   overflow: hidden;
+  padding: 1px 4px;
   flex-grow: 1;
 }
-input#ip:focus {
+input.icn-in:focus {
   border-color: transparent;
-  outline-color: #ffffffcb;
+  outline-color: #00000000;
 }

@@ -127,10 +127,15 @@ a {
 }
 
 .list-heading {
+    div {
+        border-radius: 50px;
+    }
+
+    border-radius: 50px;
     color: #00000081;
     position: sticky;
     top: -1px;
-    margin: 0;
+    margin: 2px 0 0 0;
     z-index: 4;
 }
 
@@ -175,8 +180,6 @@ h6.deckTitle {
 /////////////////////////////  Icons /////////////////////////////////////
 
 .uiIcon {
-    @extend .z-depth-0;
-
     background-color: #00000000;
     margin: 2px;
 
@@ -192,6 +195,7 @@ h6.deckTitle {
 .stc {
     @extend .btn-floating;
     @extend .btn-small;
+    @extend .z-depth-0;
 }
 
 .dyn {
@@ -204,9 +208,12 @@ h6.deckTitle {
     justify-content: flex-start;
 
     span {
-        padding-left: 8px;
+        padding: 0 4px;
     }
 }
+
+///////////////////////////// search bar ///////////////////////////////////
+
 
 /////////////////////////// Settings /////////////////////////////////////////
 
@@ -252,13 +259,15 @@ h6.deckTitle {
 }
 
 /////////////////////  Client Page  ///////////////////////
-input#ip {
+input.icn-in {
     border-color: transparent;
     display: inline;
     overflow: hidden;
+    padding: 1px 4px;
     flex-grow: 1;
+
     &:focus {
         border-color: transparent;
-        outline-color: #ffffffcb;
+        outline-color: #00000000;
     }
 }

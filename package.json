@@ -6,12 +6,17 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "linux": "electron-builder -l"
+    "dist": "build"
   },
   "build": {
     "linux": {
-      "target": "deb",
+      "target": [
+        "deb"
+      ],
       "category": "audio"
+    },
+    "win": {
+      "target": "NSIS"
     },
     "files": {
       "filter": [
@@ -35,6 +40,7 @@
     "howler": "^2.1.2",
     "ip": "^1.1.5",
     "jsmediatags": "^3.8.1",
+    "searchico": "^1.2.1",
     "socket.io": "^2.2.0",
     "sticky-events": "^2.4.0",
     "sync-foreach": "^1.0.2"
