@@ -73,9 +73,9 @@ const populate = (param) => {
     var i = 0;
 
     songDB.forEach((song) => {
-        song.listId = i++
+        song.listId = ++i;
         var newNode = makeTemplate(`
-            <div class="card horizontal waves-effect">
+            <div class="card horizontal waves-effect" id="${song.listId}">
             <div class="card-image">
                 <img src="${song.img || "./assets/headphones.svg"}">
             </div>
@@ -89,13 +89,23 @@ const populate = (param) => {
                 </div>
                 </div>
             </div>`)
-        newNode.addEventListener("click", () => {
-            playNow(song)
-        })
 
         songView.appendChild(newNode);
     })
+
     localStorage.setItem('songObjs', JSON.stringify(songDB))
+
+    songView.addEventListener("click", function (e) {
+        for (var target = e.target; target && target != this; target = target.parentNode) {
+            if (target.matches('.horizontal')) {
+                console.log(target.getAttribute('id'))
+                playNow(target.getAttribute('id'))
+                break;
+            }
+        }
+    });
+
+
     let bareSongs = []
     songDB.forEach((song) => {
         let baresong = new Object({
@@ -197,16 +207,16 @@ playPause.addEventListener('click', () => {
 })
 
 nextBtn.addEventListener('click', () => {
-    if (nowPlaying.listId != fullList.length - 1) {
-        playNow(fullList[nowPlaying.listId + 1])
+    if (nowPlaying.listId != fullList.length) {
+        playNow(nowPlaying.listId + 1)
     } else {
         M.toast({ html: '<span>End of playlist :(</span>', classes: 'rounded center-align' });
     }
 })
 
 prevBtn.addEventListener('click', () => {
-    if (nowPlaying.listId != 0) {
-        playNow(fullList[nowPlaying.listId - 1])
+    if (nowPlaying.listId != 1) {
+        playNow(nowPlaying.listId - 1)
     } else {
         M.toast({ html: '<span>Nothing to play</span>', classes: 'rounded center-align' });
     }
@@ -270,7 +280,8 @@ class Song {
 };
 
 //////////////////////  Play the Song (Aaaahhhhhh!!! Finally)  ///////////////////////
-function playNow(song) {
+function playNow(id) {
+    var song = fullList[id - 1]
     Howler.unload();
     nowPlaying = song;
     nowHowling = new Howl({
