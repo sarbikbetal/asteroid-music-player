@@ -1,22 +1,27 @@
 {
-  "name": "yamp",
-  "version": "1.0.0",
-  "description": "Yet Another Music Player - A minimal Electron application",
+  "name": "asteroid-music-player",
+  "version": "0.0.8",
+  "description": "Asteroid Music Player - A minimal Electron application",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "dist": "build"
+    "dist": "./build/icons"
   },
   "build": {
     "linux": {
       "target": [
         "deb"
       ],
-      "category": "audio"
+      "category": "audio",
+      "icon": "build"
     },
     "win": {
       "target": "NSIS"
+    },
+    "nsis": {
+      "oneClick": "false",
+      "allowToChangeInstallationDirectory": "true"
     },
     "files": {
       "filter": [

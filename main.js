@@ -12,7 +12,7 @@ const path = require('path');
 
 // const { openProcessManager } = require('electron-process-manager');
 // require('electron-reload')(__dirname)
-console.log(`${process.type}:${process.pid}`);
+// console.log(`${process.type}:${process.pid}`);
 
 ///////////////////////////////////////////////////////////////////////////
 
