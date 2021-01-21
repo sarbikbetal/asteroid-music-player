@@ -46,7 +46,7 @@
     "ip": "^1.1.5",
     "jsmediatags": "^3.8.1",
     "searchico": "^1.2.1",
-    "socket.io": "^2.2.0",
+    "socket.io": "^2.4.0",
     "sticky-events": "^2.4.0",
     "sync-foreach": "^1.0.2"
   }
